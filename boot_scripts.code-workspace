@@ -2,12 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"path": "unimportant"
-		},
-		{
-			"path": "work in progress"
 		}
 	],
 	"settings": {}
