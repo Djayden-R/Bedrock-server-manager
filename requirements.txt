@@ -1,0 +1,11 @@
+mcstatus
+github
+sys
+os
+subprocess
+urllib3
+psutil
+datetime
+dotenv
+requests
+enum
