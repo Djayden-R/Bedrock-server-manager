@@ -20,12 +20,12 @@ def get_mode():
     time = datetime.now()
     hour = time.hour
     print(f"[{datetime.now()}] current hour: {hour}")
-    if hour > 6 and hour < 24:
-        if entity_status(entity_id="input_boolean.server_update_verzocht"):
+    if hour > begin_valid_time and hour < end_valid_time:
+        if entity_status(entity_id=update_switch):
             return Mode.UPDATE
         else:
             return Mode.NORMAL
-    elif hour == 3:
+    elif hour == backup_time:
         return Mode.DRIVE_BACKUP
     else:
         return Mode.INVALID

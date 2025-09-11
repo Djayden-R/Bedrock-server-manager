@@ -2,9 +2,7 @@ from mcstatus import BedrockServer
 from time import sleep
 from datetime import datetime
 
-server = BedrockServer("192.168.1.242", 19132)
-shutdown_time = 180 #seconds
-delay = 10 #seconds
+server = BedrockServer(MC_server_ip, MC_server_port)
 amount_of_checks = int(shutdown_time/delay)
 
 def start_checking_playercount():

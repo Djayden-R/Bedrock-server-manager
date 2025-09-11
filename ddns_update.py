@@ -8,8 +8,8 @@ load_dotenv()
 url = "https://api.dynu.com/nic/update"
 
 params = {
-    "hostname": "broke.theworkpc.com",
-    "password": os.getenv("DDNS_PASSWORD")
+    "hostname": ddns_domain,
+    "password": ddns_password,
 }
 
 def update_DNS():

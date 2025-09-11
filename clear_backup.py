@@ -4,18 +4,9 @@ from datetime import datetime
 import dotenv
 import requests
 
-'''CONFIG'''
-#path for local backup's
-local_backup = os.path.expanduser("~/backup")
-#path for  HDD backup's
-hdd_backup = "/mnt/backup"
-'''END OF CONFIG'''
-
-dotenv.load_dotenv()
-HASS_TOKEN = os.getenv("HASS_TOKEN")
 
 def notify(message, color="blue", entity_id="mobile_app"):
-    url = f"http://192.168.1.185:8123/api/services/notify/{entity_id}"
+    url = f"{HA_URL}/api/services/notify/{entity_id}"
     headers = {
         "Authorization": f"Bearer {HASS_TOKEN}",
         "Content-Type": "application/json"

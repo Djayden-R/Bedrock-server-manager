@@ -3,19 +3,6 @@ import datetime
 import subprocess
 from time import monotonic
 
-'''CONFIG'''
-#directories you want to backup
-raw_directories = ["~/boot_scripts", "~/minecraft_bedrock"]
-#make directories work with ~
-directories = [os.path.expanduser(path) for path in raw_directories]
-#path for local backup's
-local_backup = os.path.expanduser( "~/backup")
-#path for  HDD backup's
-hdd_backup = "/mnt/backup"
-#Google Drive name (in rclone), must have a : after its name
-Google_Drive_name = "mcbackup:"
-'''END OF CONFIG'''
-
 def generate_file_name():
     #generate a name including the date for identification
     date = datetime.datetime.now()

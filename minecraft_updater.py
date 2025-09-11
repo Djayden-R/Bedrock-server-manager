@@ -3,9 +3,7 @@ import requests
 import os
 import subprocess
 
-TOKEN = "GITHUB_TOKEN"
 repo_name = "MCXboxBroadcast/Broadcaster"
-bedrock_bot_path = os.path.expanduser("~/bedrock_connector")
 
 def download(url, name):
         r = requests.get(url, stream=True)
