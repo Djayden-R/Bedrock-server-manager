@@ -1,37 +1,14 @@
 import os
 import psutil
 from datetime import datetime
-import dotenv
+from load_config import Config
 import requests
 
+HA_URL = Config().yaml("ha_url")
+HA_TOKEN = Config().secret("ha_token")
 
-def notify(message, color="blue", entity_id="mobile_app"):
-    url = f"{HA_URL}/api/services/notify/{entity_id}"
-    headers = {
-        "Authorization": f"Bearer {HASS_TOKEN}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "message": message,
-        "data": {
-            'color': color,
-            'icon_url': '/local/minecraft-icon-0.png',
-            'actions': [
-                {
-                    'action': 'STOP_SERVER',
-                    'title': 'Stop Server'
-                },
-                {
-                    'action': 'RESTART_SERVER', 
-                    'title': 'Restart Server'
-                }
-            ]
-        }
-    }
-
-    response = requests.post(url, headers=headers, json=payload)
-    print(f"Notification sent: {response.status_code} - {response.text}")
-    
+LOCAL_BACKUP = Config().yaml("local_backup")
+HDD_BACKUP = Config().yaml("hdd_backup")
 
 def get_backup_folders(location):
     """Gets every folder in the location and sorts them"""
@@ -180,8 +157,8 @@ def check_and_clear(location, min_free_gb, name):
         print(f"More than {min_free_gb} GB left on {name}, no need to clear backups.")
 
 def main():
-    check_and_clear(local_backup, 30, "Local Backup")
-    check_and_clear(hdd_backup, 50, "HDD Backup")
+    check_and_clear(LOCAL_BACKUP, 30, "Local Backup")
+    check_and_clear(HDD_BACKUP, 50, "HDD Backup")
 
 if __name__ == '__main__':
     main()

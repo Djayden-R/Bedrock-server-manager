@@ -5,6 +5,12 @@ import sys
 import backup
 from check_ha_switch import entity_status
 from enum import Enum
+from load_config import Config
+
+BEGIN_VALID_TIME = Config().yaml("begin_valid_time")
+END_VALID_TIME = Config().yaml("end_valid_time")
+BACKUP_TIME = Config().yaml("backup_time")
+UPDATE_SWITCH = Config().yaml("update_switch")
 
 class Mode(Enum):
     NORMAL = "normal" #normal operating mode, shutdown after 3 minutes with local backup and hdd backup
@@ -20,12 +26,12 @@ def get_mode():
     time = datetime.now()
     hour = time.hour
     print(f"[{datetime.now()}] current hour: {hour}")
-    if hour > begin_valid_time and hour < end_valid_time:
-        if entity_status(entity_id=update_switch):
+    if hour > BEGIN_VALID_TIME and hour < END_VALID_TIME:
+        if entity_status(entity_id=UPDATE_SWITCH):
             return Mode.UPDATE
         else:
             return Mode.NORMAL
-    elif hour == backup_time:
+    elif hour == BACKUP_TIME:
         return Mode.DRIVE_BACKUP
     else:
         return Mode.INVALID

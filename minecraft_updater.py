@@ -2,8 +2,12 @@ from github import Github, Auth
 import requests
 import os
 import subprocess
+from load_config import Config
 
 repo_name = "MCXboxBroadcast/Broadcaster"
+
+GITHUB_TOKEN = Config().secret("github_token")
+BEDROCK_BOT_PATH = Config().yaml("bedrock_bot_path")
 
 def download(url, name):
         r = requests.get(url, stream=True)
@@ -14,7 +18,7 @@ def download(url, name):
 
 def get_latest_release(repo_name, filename):
     # using an access token
-    auth = Auth.Token(TOKEN)
+    auth = Auth.Token(GITHUB_TOKEN)
 
     # Public Web Github
     g = Github(auth=auth)
@@ -36,8 +40,8 @@ def get_latest_release(repo_name, filename):
 
 def update_bedrock_bot():
     get_latest_release(repo_name, "MCXboxBroadcastStandalone.jar")
-    subprocess.run(["rm", f"{bedrock_bot_path}/MCXboxBroadcastStandalone.jar"])
-    subprocess.run(["mv", "MCXboxBroadcastStandalone.jar", bedrock_bot_path])
+    subprocess.run(["rm", f"{BEDROCK_BOT_PATH}/MCXboxBroadcastStandalone.jar"])
+    subprocess.run(["mv", "MCXboxBroadcastStandalone.jar", BEDROCK_BOT_PATH])
 
 def update_minecraft_server():
     minecraft_updater_path = os.path.expanduser("~/minecraft_server/updater/mcserver_autoupdater.py")

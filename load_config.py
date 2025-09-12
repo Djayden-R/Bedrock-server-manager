@@ -17,13 +17,13 @@ class Import_variables:
     
     def secret(self, key):
         try:
-            return self.env_values(key)
+            return self.env_values[key]
         except ValueError:
             print(f"Key is invalid: {key} does not exist in .env")
     
-    def secret(self, key):
+    def yaml(self, key):
         try:
-            return self.yaml_values(key)
+            return self.yaml_values[key]
         except ValueError:
-            print(f"Key is invalid: {key} does not exist in .env")
-    
+            print(f"Key is invalid: {key} does not exist in config.yaml")
+

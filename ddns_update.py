@@ -1,9 +1,10 @@
 import requests
 from datetime import datetime
 from dotenv import load_dotenv
-import os
+from load_config import Config
 
-load_dotenv()
+ddns_domain = Config().yaml("ddns_domain")
+ddns_password = Config().secret("ddns_password")
 
 url = "https://api.dynu.com/nic/update"
 

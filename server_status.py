@@ -1,9 +1,14 @@
 from mcstatus import BedrockServer
 from time import sleep
 from datetime import datetime
+from load_config import Config
 
-server = BedrockServer(MC_server_ip, MC_server_port)
-amount_of_checks = int(shutdown_time/delay)
+MC_SERVER_IP = Config().yaml("mc_server_ip")
+MC_SERVER_PORT = Config().yaml("mc_server_port")
+SHUTDOWN_TIME = Config().yaml("shutdown_time") #in seconds
+
+server = BedrockServer(MC_SERVER_IP, MC_SERVER_PORT)
+amount_of_checks = int(SHUTDOWN_TIME/10)
 
 def start_checking_playercount():
     times_no_one = 0
@@ -35,5 +40,5 @@ def start_checking_playercount():
             else:
                 return False #no backup needed
 
-        sleep(delay)
+        sleep(10)
 
