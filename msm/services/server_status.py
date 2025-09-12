@@ -1,7 +1,7 @@
 from mcstatus import BedrockServer
 from time import sleep
 from datetime import datetime
-from load_config import Config
+from msm.config.load_config import Config
 
 MC_SERVER_IP = Config().yaml("mc_server_ip")
 MC_SERVER_PORT = Config().yaml("mc_server_port")

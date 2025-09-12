@@ -2,7 +2,7 @@ from github import Github, Auth
 import requests
 import os
 import subprocess
-from load_config import Config
+from msm.config.load_config import Config
 
 repo_name = "MCXboxBroadcast/Broadcaster"
 
