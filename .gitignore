@@ -1,8 +1,5 @@
 __pycache__/
 *.pyc
 *.code-workspace
-*.env
-*config.yaml
-*.wakatime-project
-tests/
-work in progress/
+config.yaml
+.wakatime-project
