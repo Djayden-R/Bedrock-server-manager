@@ -4,10 +4,13 @@ from msm.config.load_config import Config
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-HA_URL = Config().yaml("ha_url")
-HA_TOKEN = Config().secret("ha_token")
+cfg = Config()
 
-def entity_status(entity_id="input_boolean.auto_shutdown"):
+HA_URL = cfg.yaml("ha_url")
+HA_TOKEN = cfg.secret("ha_token")
+AUTO_SHUTDOWN_ENTITY = "input_boolean.auto_shutdown"
+
+def entity_status(entity_id=AUTO_SHUTDOWN_ENTITY):
     url = f"{HA_URL}/api/states/{entity_id}"
     headers = {
         "Authorization": f"Bearer {HA_TOKEN}",

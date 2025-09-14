@@ -6,8 +6,9 @@ from msm.config.load_config import Config
 
 repo_name = "MCXboxBroadcast/Broadcaster"
 
-GITHUB_TOKEN = Config().secret("github_token")
-BEDROCK_BOT_PATH = Config().yaml("bedrock_bot_path")
+cfg = Config()
+GITHUB_TOKEN = cfg.secret("github_token")
+BEDROCK_BOT_PATH = cfg.yaml("bedrock_bot_path")
 
 def download(url, name):
         r = requests.get(url, stream=True)

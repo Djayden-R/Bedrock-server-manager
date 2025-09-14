@@ -4,11 +4,12 @@ from datetime import datetime
 from msm.config.load_config import Config
 import requests
 
-HA_URL = Config().yaml("ha_url")
-HA_TOKEN = Config().secret("ha_token")
+cfg = Config()
+HA_URL = cfg.yaml("ha_url")
+HA_TOKEN = cfg.secret("ha_token")
 
-LOCAL_BACKUP = Config().yaml("local_backup")
-HDD_BACKUP = Config().yaml("hdd_backup")
+LOCAL_BACKUP = cfg.yaml("local_backup")
+HDD_BACKUP = cfg.yaml("hdd_backup")
 
 def get_backup_folders(location):
     """Gets every folder in the location and sorts them"""

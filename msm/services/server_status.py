@@ -3,9 +3,10 @@ from time import sleep
 from datetime import datetime
 from msm.config.load_config import Config
 
-MC_SERVER_IP = Config().yaml("mc_server_ip")
-MC_SERVER_PORT = Config().yaml("mc_server_port")
-SHUTDOWN_TIME = Config().yaml("shutdown_time") #in seconds
+cfg = Config()
+MC_SERVER_IP = cfg.yaml("mc_server_ip")
+MC_SERVER_PORT = cfg.yaml("mc_server_port")
+SHUTDOWN_TIME = cfg.yaml("shutdown_time") #in seconds
 
 server = BedrockServer(MC_SERVER_IP, MC_SERVER_PORT)
 amount_of_checks = int(SHUTDOWN_TIME/10)

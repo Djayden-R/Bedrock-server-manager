@@ -1,7 +1,7 @@
 import dotenv
 import yaml
 
-class Import_variables:
+class Config:
     def __init__(self):
         self.yaml_values = self.load_yaml()
         self.env_values = self.load_env()

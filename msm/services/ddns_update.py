@@ -3,8 +3,9 @@ from datetime import datetime
 from dotenv import load_dotenv
 from msm.config.load_config import Config
 
-ddns_domain = Config().yaml("ddns_domain")
-ddns_password = Config().secret("ddns_password")
+cfg = Config()
+ddns_domain = cfg.yaml("ddns_domain")
+ddns_password = cfg.secret("ddns_password")
 
 url = "https://api.dynu.com/nic/update"
 
