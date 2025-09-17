@@ -7,7 +7,6 @@ import requests
 cfg = Config()
 HA_URL = cfg.yaml("ha_url")
 HA_TOKEN = cfg.secret("ha_token")
-
 LOCAL_BACKUP = cfg.yaml("local_backup")
 HDD_BACKUP = cfg.yaml("hdd_backup")
 

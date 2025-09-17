@@ -5,7 +5,6 @@ from msm.config.load_config import Config
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 cfg = Config()
-
 HA_URL = cfg.yaml("ha_url")
 HA_TOKEN = cfg.secret("ha_token")
 AUTO_SHUTDOWN_ENTITY = "input_boolean.auto_shutdown"

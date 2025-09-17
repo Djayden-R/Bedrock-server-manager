@@ -7,10 +7,11 @@ import sys
 from datetime import datetime
 from enum import Enum
 
-BEGIN_VALID_TIME = Config().yaml("begin_valid_time")
-END_VALID_TIME = Config().yaml("end_valid_time")
-BACKUP_TIME = Config().yaml("backup_time")
-UPDATE_SWITCH = Config().yaml("update_switch")
+cfg = Config()
+BEGIN_VALID_TIME = cfg.yaml("begin_valid_time")
+END_VALID_TIME = cfg.yaml("end_valid_time")
+BACKUP_TIME = cfg.yaml("backup_time")
+UPDATE_SWITCH = cfg.yaml("update_switch")
 
 class Mode(Enum):
     NORMAL = "normal" #normal operating mode, shutdown after 3 minutes with local backup and hdd backup

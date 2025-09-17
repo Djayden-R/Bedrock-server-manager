@@ -5,10 +5,10 @@ from time import monotonic
 from msm.config.load_config import Config
 
 cfg = Config()
-LOCAL_BACKUP = cfg.yaml("local_backup")
-HDD_BACKUP = cfg.yaml("hdd_backup")
-GOOGLE_DRIVE_NAME = cfg.yaml("google_drive_name")
-DIRECTORIES = cfg.yaml("backup_directories")
+LOCAL_BACKUP = cfg.load("local_backup")
+HDD_BACKUP = cfg.load("hdd_backup")
+GOOGLE_DRIVE_NAME = cfg.load("google_drive_name")
+DIRECTORIES = cfg.load("backup_directories")
 
 def generate_file_name():
     #generate a name including the date for identification
