@@ -101,20 +101,30 @@ def main():
 
     if home_assistant:
         home_assistant_ip, home_assistant_token = home_assistant_setup()
-        variables_to_save["HOME_ASSISTANT"] = {"ip": home_assistant_ip, "token": home_assistant_token}
+        variables_to_save["HOME_ASSISTANT"] = {"active": True, "ip": home_assistant_ip, "token": home_assistant_token}
+    else:
+        variables_to_save["HOME_ASSISTANT"] = {"active": False, "ip": None, "token": None}
 
     if dynu:
         dynu_password, dynu_domain = dynu_setup()
-        variables_to_save["DYNU"] = {"password": dynu_password, "domain": dynu_domain}
+        variables_to_save["DYNU"] = {"active": True, "password": dynu_password, "domain": dynu_domain}
+    else:
+        variables_to_save["DYNU"] = {"active": False, "password": None, "domain": None}
 
     github_token = github_setup(github_account)
     variables_to_save["GITHUB"] = {"token": github_token}
 
     clear_console()
+
+    print("Now that we have all of the services set-up, let's set up your minecraft server")
+    #ask for shutdown modus
+    #ask for shutdown time
+    #install the minecraft server, install the minecraft bot
+
     print("Now that we have all those values let's save them to a .yaml file")
     print("You should never share this file as it will give access to all of the services you added just now")
 
-    with open('config.yaml', 'w') as f:
+    with open('config/config.yaml', 'w') as f:
         yaml.dump(variables_to_save, f, default_flow_style=False, indent=2)
 
 if __name__ == "__main__":
