@@ -3,6 +3,13 @@ import time
 import questionary
 import os
 import yaml
+
+# Add the project root to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, project_root)
+
+import msm.core.minecraft_updater
+
 #setup file for new users
 
 """
@@ -67,20 +74,6 @@ def home_assistant_setup():
     print("We will be coming back to Home Assistant later on for some more configuring, but for now we are done")
     return home_assistant_ip, home_assistant_token
 
-def github_setup(account_made):
-    clear_console()
-    print("This code will be using two other GitHub projects, and to download and update them we will use the GitHub API")
-    print("It uses your token to download files from the repo's")
-    if not account_made:
-        print("I see you do not have an account yet, you need to make one for this program")
-        questionary.press_any_key_to_continue("Continue once you have made your account").ask()
-    print("Now go to github.com")
-    questionary.press_any_key_to_continue("Continue once you have opened GitHub").ask()
-    print("Now click on your profile (top-right) > Settings > Developer settings > Personal Access Tokens > Tokens (classic) > Generate new token > Generate new token (classic)")
-    print("Now just give it a name like Minecraft manager, set an experation and copy the key")
-    github_token = questionary.password("Paste your GitHub token here:").ask()
-    return github_token
-
 def shutdown_mode_setup():
     clear_console()
     print("This code is made to shutdown your server after a set amount of time where no one is online")
@@ -118,8 +111,6 @@ def main():
 
     dynu = questionary.confirm("Do you want to set-up dynu for dynamic dns?").ask()
 
-    github_account = questionary.confirm("Do you already have a GitHub account?").ask()
-
     variables_to_save = {}
 
     if home_assistant:
@@ -138,15 +129,12 @@ def main():
     
     variables_to_save["DYNU"] = {"active": active, "password": password, "domain": domain}
 
-    github_token = github_setup(github_account)
-    variables_to_save["GITHUB"] = {"token": github_token}   
-
     clear_console()
 
     print("Now that we have all of the services set-up, let's set up your minecraft server")
 
     shutdown_mode, shutdown_time = shutdown_mode_setup()
-    variables_to_save["Shutdown"] = {"auto_shutdown": shutdown_mode, "shutdown_time": shutdown_time}
+    variables_to_save["SHUTDOWN"] = {"auto_shutdown": shutdown_mode, "shutdown_time": shutdown_time}
     #install the minecraft server, install the minecraft bot
 
     print("Now that we have all those values let's save them to a .yaml file")
@@ -154,6 +142,10 @@ def main():
 
     with open('msm/config/config.yaml', 'w') as f:
         yaml.dump(variables_to_save, f, default_flow_style=False, indent=2)
+    
+    print("Now we just download the required repositories")
+    msm.core.minecraft_updater.get_bedrock_bot()
+    msm.core.minecraft_updater.get_minecraft_updater()
 
 if __name__ == "__main__":
     main()
