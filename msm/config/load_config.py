@@ -1,10 +1,11 @@
 import yaml
+import os
 
 class Config:
     def __init__(self):
-        self.yaml_values = self.load_yaml()
+        self.yaml_values = self.load_yaml(f"{os.path.realpath(__file__).removesuffix("load_config.py")}config.yaml")
 
-    def load_yaml(yaml_path):
+    def load_yaml(self, yaml_path):
         with open(yaml_path, "r", encoding="utf-8") as f:
             return yaml.safe_load(f)
     
