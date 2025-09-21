@@ -1,4 +1,5 @@
 import sys
+import time
 import questionary
 import os
 import yaml
@@ -79,7 +80,21 @@ def github_setup(account_made):
     print("Now just give it a name like Minecraft manager, set an experation and copy the key")
     github_token = questionary.password("Paste your GitHub token here:").ask()
     return github_token
+
+def shutdown_mode_setup():
+    clear_console()
+    print("This code is made to shutdown your server after a set amount of time where no one is online")
+    if questionary.confirm("Would you like to enable that?").ask():
+        shutdown_mode = True
+        shutdown_time = questionary.text(
+            "After how many minutes of inactivity should the server shutdown?",
+            validate=lambda val: val.isdigit() or "Enter a number"
+            ).ask()
+    else:
+        shutdown_mode, shutdown_time = False, None
     
+    return shutdown_mode, shutdown_time
+
 def main():
     print("Hi, there!")
     print("This is a program for fully managing your minecraft server")
@@ -88,43 +103,56 @@ def main():
 
     clear_console()
 
-    questionary.press_any_key_to_continue("First I am going to ask you a few questions to set everything up.").ask()
+    program_location = os.path.realpath(__file__).removesuffix("\\msm\\config\\configuration.py")
+    if questionary.confirm(f"Are you sure you want to use this: {program_location} location for this program?").ask():
+        print("Great, let's continue")
+    else:
+        print("Please move this program to the location you want to use and run it again.")
+        time.sleep(3)
+        sys.exit(0)
+    
+    questionary.press_any_key_to_continue("I am going to ask you a few questions to set everything up.").ask()
 
 
     home_assistant = questionary.confirm("Do you want to use Home Assistant?").ask()
 
     dynu = questionary.confirm("Do you want to set-up dynu for dynamic dns?").ask()
 
-    github_account = questionary.confirm("Do you already have a github account?").ask()
+    github_account = questionary.confirm("Do you already have a GitHub account?").ask()
 
     variables_to_save = {}
 
     if home_assistant:
         home_assistant_ip, home_assistant_token = home_assistant_setup()
-        variables_to_save["HOME_ASSISTANT"] = {"active": True, "ip": home_assistant_ip, "token": home_assistant_token}
+        active, ip, token =  True, home_assistant_ip, home_assistant_token
     else:
-        variables_to_save["HOME_ASSISTANT"] = {"active": False, "ip": None, "token": None}
+        active, ip, token = False, None, None
+    
+    variables_to_save["HOME_ASSISTANT"] = {"active": active, "ip": ip, "token": token}
 
     if dynu:
         dynu_password, dynu_domain = dynu_setup()
-        variables_to_save["DYNU"] = {"active": True, "password": dynu_password, "domain": dynu_domain}
+        active, password, domain = True, dynu_password, dynu_domain
     else:
-        variables_to_save["DYNU"] = {"active": False, "password": None, "domain": None}
+        active, password, domain = False, None, None
+    
+    variables_to_save["DYNU"] = {"active": active, "password": password, "domain": domain}
 
     github_token = github_setup(github_account)
-    variables_to_save["GITHUB"] = {"token": github_token}
+    variables_to_save["GITHUB"] = {"token": github_token}   
 
     clear_console()
 
     print("Now that we have all of the services set-up, let's set up your minecraft server")
-    #ask for shutdown modus
-    #ask for shutdown time
+
+    shutdown_mode, shutdown_time = shutdown_mode_setup()
+    variables_to_save["Shutdown"] = {"auto_shutdown": shutdown_mode, "shutdown_time": shutdown_time}
     #install the minecraft server, install the minecraft bot
 
     print("Now that we have all those values let's save them to a .yaml file")
     print("You should never share this file as it will give access to all of the services you added just now")
 
-    with open('config/config.yaml', 'w') as f:
+    with open('msm/config/config.yaml', 'w') as f:
         yaml.dump(variables_to_save, f, default_flow_style=False, indent=2)
 
 if __name__ == "__main__":
