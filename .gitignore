@@ -1,4 +1,6 @@
-__pycache__/
+__pycache__
 *.pyc
 *.code-workspace
 config.yaml
+.venv
+*.egg-info
