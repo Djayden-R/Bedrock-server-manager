@@ -2,13 +2,6 @@ import os
 import psutil
 from datetime import datetime
 from msm.config.load_config import Config
-import requests
-
-cfg = Config()
-HA_URL = cfg.yaml("ha_url")
-HA_TOKEN = cfg.secret("ha_token")
-LOCAL_BACKUP = cfg.yaml("local_backup")
-HDD_BACKUP = cfg.yaml("hdd_backup")
 
 def get_backup_folders(location):
     """Gets every folder in the location and sorts them"""
@@ -156,9 +149,6 @@ def check_and_clear(location, min_free_gb, name):
     else:
         print(f"More than {min_free_gb} GB left on {name}, no need to clear backups.")
 
-def main():
-    check_and_clear(LOCAL_BACKUP, 30, "Local Backup")
-    check_and_clear(HDD_BACKUP, 50, "HDD Backup")
-
-if __name__ == '__main__':
-    main()
+def main(cfg: Config):
+    check_and_clear(cfg.local_backup_path, 30, "Local Backup")
+    check_and_clear(cfg.hdd_backup_path, 50, "HDD Backup")

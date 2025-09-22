@@ -2,21 +2,10 @@ from git import Repo
 import requests
 import os
 import subprocess
-import sys
-import certifi
-
-# Add the project root to Python path
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, project_root)
-
 from msm.config.load_config import Config
 
 bedrockbot_repo = "MCXboxBroadcast/Broadcaster"
 minecraft_updater_repo = "ghwns9652/Minecraft-Bedrock-Server-Updater"
-
-cfg = Config()
-BEDROCK_BOT_PATH = os.path.join(project_root, "bedrock_connector")
-MC_UPDATER_PATH = os.path.join(project_root, "minecraft_updater")
 
 def download(url, file_path):
         r = requests.get(url, stream=True)
@@ -52,23 +41,21 @@ def get_latest_release(repo_name, download_location, filename=None):
             else:
                 print("Problem during download")
 
-def get_bedrock_bot():
-    if os.path.exists(f"{BEDROCK_BOT_PATH}/ps-connection-bot"):
-        os.remove(f"{BEDROCK_BOT_PATH}/ps-connection-bot")
-    get_latest_release(bedrockbot_repo, BEDROCK_BOT_PATH , filename="MCXboxBroadcastStandalone.jar")
+def get_bedrock_bot(cfg: Config):
+    if os.path.exists(f"{cfg.bedrock_bot_path}/ps-connection-bot"):
+        os.remove(f"{cfg.bedrock_bot_path}/ps-connection-bot")
+    
+    get_latest_release(bedrockbot_repo, cfg.bedrock_bot_path , filename="MCXboxBroadcastStandalone.jar")
 
-def get_minecraft_updater():
-    if os.path.exists(f"{MC_UPDATER_PATH}/updater-script-for-minecraft"):
-        os.remove(f"{MC_UPDATER_PATH}/updater-script-for-minecraft")
-    Repo.clone_from(f"https://github.com/{minecraft_updater_repo}.git", MC_UPDATER_PATH)
+def get_minecraft_updater(cfg: Config):
+    if os.path.exists(f"{cfg.mc_updater_path}/updater-script-for-minecraft"):
+        os.remove(f"{cfg.mc_updater_path}/updater-script-for-minecraft")
+    Repo.clone_from(f"https://github.com/{minecraft_updater_repo}.git", cfg.mc_updater_path)
 
 def update_minecraft_server():
     minecraft_updater_path = os.path.expanduser("~/minecraft_server/updater/mcserver_autoupdater.py")
     subprocess.run(['python3', minecraft_updater_path])
 
-def main():
-    get_bedrock_bot()
-    update_minecraft_server()
-
-if __name__ == "__main__":
-    main()
+def main(cfg: Config):
+    get_bedrock_bot(cfg)
+    update_minecraft_server(cfg)

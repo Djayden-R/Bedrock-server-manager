@@ -7,11 +7,7 @@ import sys
 from datetime import datetime
 from enum import Enum
 
-cfg = Config()
-BEGIN_VALID_TIME = cfg.yaml("begin_valid_time")
-END_VALID_TIME = cfg.yaml("end_valid_time")
-BACKUP_TIME = cfg.yaml("backup_time")
-UPDATE_SWITCH = cfg.yaml("update_switch")
+cfg = Config.load()
 
 class Mode(Enum):
     NORMAL = "normal" #normal operating mode, shutdown after 3 minutes with local backup and hdd backup
@@ -27,12 +23,12 @@ def get_mode():
     time = datetime.now()
     hour = time.hour
     print(f"[{datetime.now()}] current hour: {hour}")
-    if hour > BEGIN_VALID_TIME and hour < END_VALID_TIME:
-        if entity_status(entity_id=UPDATE_SWITCH):
+    if hour > cfg.begin_valid_time and hour < cfg.end_valid_time:
+        if entity_status(entity_id=cfg.update_switch):
             return Mode.UPDATE
         else:
             return Mode.NORMAL
-    elif hour == BACKUP_TIME:
+    elif hour == cfg.backup_time:
         return Mode.DRIVE_BACKUP
     else:
         return Mode.INVALID
@@ -40,7 +36,7 @@ def get_mode():
 def normal_shutdown():
     update_DNS()
     while True:
-        if start_checking_playercount():
+        if start_checking_playercount(cfg):
             if entity_status():
                 print(f"[{datetime.now()}] starting backup script")
                 backup.main(type="quick")
