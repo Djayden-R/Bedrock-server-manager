@@ -1,17 +1,16 @@
 import yaml
-import os
+from pathlib import Path
+from dataclasses import dataclass
 
+@dataclass
 class Config:
-    def __init__(self):
-        self.yaml_values = self.load_yaml(f"{os.path.realpath(__file__).removesuffix("load_config.py")}config.yaml")
+    update_switch: str
+    begin_valid_time: int
+    end_valid_time: int
+    backup_time: int
 
-    def load_yaml(self, yaml_path):
-        with open(yaml_path, "r", encoding="utf-8") as f:
-            return yaml.safe_load(f)
-    
-    def load(self, key):
-        try:
-            return self.yaml_values[key]
-        except ValueError:
-            print(f"Key is invalid: {key} does not exist in config.yaml")
+    @classmethod
+    def load(cls, path: Path = Path("config.yaml")) -> "Config":
+        data = yaml.safe_load(path.read_text())
+        return cls(**data)
 
