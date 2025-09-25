@@ -3,6 +3,7 @@ import requests
 import os
 import subprocess
 from msm.config.load_config import Config
+from shutil import rmtree
 
 bedrockbot_repo = "MCXboxBroadcast/Broadcaster"
 minecraft_updater_repo = "ghwns9652/Minecraft-Bedrock-Server-Updater"
@@ -42,18 +43,19 @@ def get_latest_release(repo_name, download_location, filename=None):
                 print("Problem during download")
 
 def get_bedrock_bot(cfg: Config):
-    if os.path.exists(f"{cfg.bedrock_bot_path}/ps-connection-bot"):
-        os.remove(f"{cfg.bedrock_bot_path}/ps-connection-bot")
-    
+    if os.path.exists(cfg.bedrock_bot_path):
+        rmtree(cfg.bedrock_bot_path)
+    os.makedirs(cfg.bedrock_bot_path, exist_ok=True)
+
     get_latest_release(bedrockbot_repo, cfg.bedrock_bot_path , filename="MCXboxBroadcastStandalone.jar")
 
 def get_minecraft_updater(cfg: Config):
-    if os.path.exists(f"{cfg.mc_updater_path}/updater-script-for-minecraft"):
-        os.remove(f"{cfg.mc_updater_path}/updater-script-for-minecraft")
+    if os.path.exists(cfg.mc_updater_path):
+        rmtree(cfg.mc_updater_path)
     Repo.clone_from(f"https://github.com/{minecraft_updater_repo}.git", cfg.mc_updater_path)
 
-def update_minecraft_server():
-    minecraft_updater_path = os.path.expanduser("~/minecraft_server/updater/mcserver_autoupdater.py")
+def update_minecraft_server(cfg: Config):
+    minecraft_updater_path = os.path.expanduser(f"{cfg.mc_updater_path}/updater/mcserver_autoupdater.py")
     subprocess.run(['python3', minecraft_updater_path])
 
 def main(cfg: Config):
