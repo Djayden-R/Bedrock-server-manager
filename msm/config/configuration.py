@@ -171,7 +171,7 @@ def main():
 
     if auto_backup:
         local_backup_path, hdd_backup_path, drive_backup_path, backup_directories = automatic_backups_setup(program_location)
-        config_data["automatic_backups"] = {k: v for k, v in [("local_backup_path", local_backup_path), ("hdd_backup_path", hdd_backup_path), ("drive_backup_path", drive_backup_path), ("backup_directories", backup_directories)] if v is not None}
+        config_data["backups"] = {k: v for k, v in [("local_backup_path", local_backup_path), ("hdd_backup_path", hdd_backup_path), ("drive_backup_path", drive_backup_path), ("backup_directories", backup_directories)] if v is not None}
 
     clear_console()
 
