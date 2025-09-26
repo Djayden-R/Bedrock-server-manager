@@ -19,12 +19,15 @@ def shutdown():
 	with open("/tmp/mc_ready","w") as f:
 		f.write("done")
 
+def hour_valid(hour):
+    return cfg.timing_begin_valid < hour < cfg.timing_end_valid
+
 def get_mode():
     time = datetime.now()
     hour = time.hour
     print(f"[{datetime.now()}] current hour: {hour}")
-    if hour > cfg.begin_valid_time and hour < cfg.end_valid_time:
-        if entity_status(entity_id=cfg.update_switch):
+    if hour_valid(hour):
+        if entity_status(cfg, cfg.ha_update_entity):
             return Mode.UPDATE
         else:
             return Mode.NORMAL
@@ -34,7 +37,7 @@ def get_mode():
         return Mode.INVALID
 
 def normal_shutdown():
-    update_DNS()
+    update_DNS(cfg)
     while True:
         if start_checking_playercount(cfg):
             if entity_status():
