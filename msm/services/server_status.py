@@ -4,8 +4,8 @@ from datetime import datetime
 from msm.config.load_config import Config
 
 def start_checking_playercount(cfg: Config) -> bool:
-    server = BedrockServer(cfg.mc_server_ip, cfg.mc_server_port)
-    amount_of_checks = int(cfg.shutdown_time / 10)
+    server = BedrockServer(cfg.mc_ip, cfg.mc_port)
+    amount_of_checks = int(cfg.timing_shutdown / 10)
     
     times_no_one = 0
     server_used = False

@@ -7,8 +7,8 @@ url = "https://api.dynu.com/nic/update"
 def update_DNS(cfg: Config):
 
     params = {
-        "hostname": cfg.ddns_domain,
-        "password": cfg.ddns_password,
+        "hostname": cfg.dynu_domain,
+        "password": cfg.dynu_pass,
     }
 
     response = requests.get(url, params=params)
