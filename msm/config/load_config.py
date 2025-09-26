@@ -4,49 +4,50 @@ from dataclasses import dataclass
 from typing import Optional, List
 
 @dataclass(frozen=True)
-class HomeAssistant:
-    ip: str
-    token: str
-
-@dataclass(frozen=True)
-class Dynu:
-    password: str
-    domain: str
-
-@dataclass(frozen=True)
-class Backups:
-    backup_directories: List[str]
-    drive_backup_path: Optional[str] = None
-    hdd_backup_path: Optional[str] = None
-    local_backup_path: Optional[str] = None
-
-@dataclass(frozen=True)
-class Shutdown:
-    shutdown_time: str
-
-@dataclass(frozen=True)
 class Config:
-    home_assistant: Optional[HomeAssistant] = None
-    dynu: Optional[Dynu] = None
-    backups: Optional[Backups] = None
-    shutdown: Optional[Shutdown] = None
+    # Home Assistant
+    ha_ip: Optional[str] = None
+    ha_token: Optional[str] = None
+    ha_update_entity: Optional[str] = None
+    ha_shutdown_entity: Optional[str] = None
+
+    # Dynu DNS
+    dynu_pass: Optional[str] = None
+    dynu_domain: Optional[str] = None
+    
+    # Minecraft Server
+    mc_ip: Optional[str] = None
+    mc_port: Optional[int] = None
+    
+    # Backup settings
+    backup_local_path: Optional[str] = None
+    backup_hdd_path: Optional[str] = None
+    backup_drive_name: Optional[str] = None
+    backup_directories: Optional[List[str]] = None
+    
+    # Timing
+    timing_begin_valid: Optional[str] = None
+    timing_end_valid: Optional[str] = None
+    timing_shutdown: Optional[int] = None
+
+    # Paths
+    path_bedrock_bot: Optional[str] = None
+    path_mc_updater: Optional[str] = None
 
     @classmethod
-    def load(cls, path: Path = Path("config.yaml")) -> "Config":
+    def load(cls, path: Path = Path("msm/config/config.yaml").resolve()) -> "Config":
         if not path.exists():
             raise FileNotFoundError(f"Config file not found: {path}")
-            
+        
         data = yaml.safe_load(path.read_text())
         
-        # Convert nested dicts to dataclass instances
-        home_assistant = HomeAssistant(**data["home_assistant"]) if "home_assistant" in data else None
-        dynu = Dynu(**data["dynu_dns"]) if "dynu_dns" in data else None  # Note: your YAML uses "dynu_dns"
-        backups = Backups(**data["backups"]) if "backups" in data else None
-        shutdown = Shutdown(**data["shutdown"]) if "shutdown" in data else None
-        
-        return cls(
-            home_assistant=home_assistant,
-            dynu=dynu,
-            backups=backups,
-            shutdown=shutdown
-        )
+        # Flatten nested structure
+        flat_data = {}
+        for section, values in data.items():
+            if isinstance(values, dict):
+                for key, value in values.items():
+                    flat_data[f"{section}_{key}"] = value
+            else:
+                flat_data[section] = values
+                
+        return cls(**flat_data)
