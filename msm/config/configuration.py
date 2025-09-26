@@ -1,8 +1,10 @@
+from socket import socket
 import sys
 import time
 import questionary
 import os
 import yaml
+import socket
 
 # Add the project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -61,21 +63,34 @@ def home_assistant_setup():
     print("Then paste the token bellow")
     home_assistant_token = questionary.password("Home Assistant token:").ask()
     clear_console()
-    print("We will be coming back to Home Assistant later on for some more configuring, but for now we are done")
-    return home_assistant_ip, home_assistant_token
+    print("Now we have to set up two switches")
+    print("First make a switch for turning on and off auto shutdown (useful for debugging)")
+    print("Go to settings > devices and services > helpers > add (switch)")
+    auto_shutdown_entity = questionary.text("Name of switch: ", validate=lambda val: val.beginswith("input_boolean.") or "helper must be a switch", default="input_boolean.")
+    print("Now add one for requesting an update for the server")
+    update_entity = questionary.text("Name of switch: ", validate=lambda val: val.beginswith("input_boolean.") or "helper must be a switch", default="input_boolean.")
+    return home_assistant_ip, home_assistant_token, auto_shutdown_entity, update_entity
 
 def shutdown_mode_setup():
     clear_console()
     print("This code is made to shutdown your server after a set amount of time where no one is online")
     if questionary.confirm("Would you like to enable that?").ask():
-        shutdown_time = questionary.text(
+        shutdown_time = int(questionary.text(
             "After how many minutes of inactivity should the server shutdown?",
             validate=lambda val: val.isdigit() or "Enter a number"
-            ).ask()
+        ).ask())
+        if questionary.confirm("It is also possible to enable certain timeframes where the server will not startup.\nWould you like to enable that?").ask():
+            begin_valid_time = int(questionary.text(
+                "Enter the start time in 24h format HH",
+                validate=lambda val: val.isdigit() and 0 <= int(val) < 24 or "Enter a valid time in HH format"
+            ).ask().removeprefix("0"))
+            end_valid_time = int(questionary.text(
+                "Enter the end time in 24h format (HH)",
+                validate=lambda val: val.isdigit() and 0 <= int(val) < 24 or "Enter a valid time in HH format"
+            ).ask().removeprefix("0"))
+            return shutdown_time, begin_valid_time, end_valid_time
     else:
-        shutdown_time = None
-    
-    return shutdown_time
+        return None, None, None
 
 def automatic_backups_setup(default_path):
     clear_console()
@@ -126,6 +141,13 @@ def automatic_backups_setup(default_path):
         backup_directories.append(directory)
     return local_backup_path, hdd_backup_path, drive_backup_path, backup_directories
 
+def get_minecraft_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    ip = s.getsockname()[0]
+    s.close()
+    return ip
+
 def main():
     print("Hi, there!")
     print("This is a program for fully managing your minecraft server")
@@ -158,22 +180,27 @@ def main():
     config_data = {}
 
     if home_assistant:
-        ha_ip, ha_token = home_assistant_setup()
-        config_data["home_assistant"] = {"active": True, "ip": ha_ip, "token": ha_token}
+        ha_ip, ha_token, auto_shutdown_entity, update_entity = home_assistant_setup()
+        config_data["ha"] = {"ip": ha_ip, "token": ha_token, "shutdown_entity": auto_shutdown_entity, "update_entity": update_entity}
 
     if dynu:
         dynu_password, dynu_domain = dynu_setup()
-        config_data["dynu_dns"] = {"active": True, "password": dynu_password, "domain": dynu_domain}
+        config_data["dynu"] = {"pass": dynu_password, "domain": dynu_domain}
 
     if auto_shutdown:
-        shutdown_time = shutdown_mode_setup()
-        config_data["shutdown"] = {"shutdown_time": shutdown_time}
+        shutdown_time, begin_valid_time, end_valid_time = shutdown_mode_setup()
+        config_data["timing"] = {k: v for k, v in [("shutdown_time", shutdown_time), ("begin_valid", begin_valid_time), ("end_valid", end_valid_time)] if v is not None}
 
     if auto_backup:
         local_backup_path, hdd_backup_path, drive_backup_path, backup_directories = automatic_backups_setup(program_location)
-        config_data["backups"] = {k: v for k, v in [("local_backup_path", local_backup_path), ("hdd_backup_path", hdd_backup_path), ("drive_backup_path", drive_backup_path), ("backup_directories", backup_directories)] if v is not None}
+        config_data["backup"] = {k: v for k, v in [("local_backup_path", local_backup_path), ("hdd_backup_path", hdd_backup_path), ("drive_backup_path", drive_backup_path), ("backup_directories", backup_directories)] if v is not None}
 
     clear_console()
+    mc_ip = get_minecraft_ip()
+    mc_port = int(questionary.text("Enter the Minecraft server port:", default="19132", validate=lambda x: x.isdigit()).ask())
+    config_data["mc"] = {"ip": mc_ip, "port": mc_port}
+    clear_console()
+
 
     with open('msm/config/config.yaml', 'w') as f:
         yaml.dump(config_data, f, default_flow_style=False, indent=2)
