@@ -29,6 +29,7 @@ class Config:
     timing_begin_valid: Optional[str] = None
     timing_end_valid: Optional[str] = None
     timing_shutdown: Optional[int] = None
+    timing_drive_backup: Optional[int] = None
 
     # Paths
     path_bedrock_bot: Optional[str] = None
