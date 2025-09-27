@@ -66,9 +66,9 @@ def home_assistant_setup():
     print("Now we have to set up two switches")
     print("First make a switch for turning on and off auto shutdown (useful for debugging)")
     print("Go to settings > devices and services > helpers > add (switch)")
-    auto_shutdown_entity = questionary.text("Name of switch: ", validate=lambda val: val.beginswith("input_boolean.") or "helper must be a switch", default="input_boolean.")
+    auto_shutdown_entity = questionary.text("Name of switch: ", validate=lambda val: val.startswith("input_boolean.") or "helper must be a switch", default="input_boolean.").ask()
     print("Now add one for requesting an update for the server")
-    update_entity = questionary.text("Name of switch: ", validate=lambda val: val.beginswith("input_boolean.") or "helper must be a switch", default="input_boolean.")
+    update_entity = questionary.text("Name of switch: ", validate=lambda val: val.startswith("input_boolean.") or "helper must be a switch", default="input_boolean.").ask()
     return home_assistant_ip, home_assistant_token, auto_shutdown_entity, update_entity
 
 def shutdown_mode_setup(drive_enabled):
@@ -166,7 +166,7 @@ def main():
 
     clear_console()
 
-    program_location = os.path.realpath(__file__).removesuffix("\\msm\\config\\configuration.py")
+    program_location = os.path.realpath(__file__).removesuffix("\\msm\\config\\configuration.py").removesuffix("/msm/config/configuration.py")
     if questionary.confirm(f"Are you sure you want to use this location:\n {program_location} \nfor this program?").ask():
         print("Great, let's continue")
     else:
