@@ -90,7 +90,9 @@ def clear_old_backups(backup_per_date, required_free_space, base_path):
         elif freed_space < required_free_space:
             print("ERROR - No more old backups to remove, but not enough space freed.")
             break
-
+        else:
+            directory = None
+        
         freed_space = remove_oldest_backup(directory, backup_per_date, base_path, freed_space)
     print(f"Total freed space: {freed_space:.2f} GB")
 
@@ -150,5 +152,5 @@ def check_and_clear(location, min_free_gb, name):
         print(f"More than {min_free_gb} GB left on {name}, no need to clear backups.")
 
 def main(cfg: Config):
-    check_and_clear(cfg.local_backup_path, 30, "Local Backup")
-    check_and_clear(cfg.hdd_backup_path, 50, "HDD Backup")
+    check_and_clear(cfg.backup_local_path, 30, "Local Backup")
+    check_and_clear(cfg.backup_hdd_path, 50, "HDD Backup")
