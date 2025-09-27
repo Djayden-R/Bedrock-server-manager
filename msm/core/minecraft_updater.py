@@ -43,19 +43,25 @@ def get_latest_release(repo_name, download_location, filename=None):
                 print("Problem during download")
 
 def get_bedrock_bot(cfg: Config):
-    if os.path.exists(cfg.bedrock_bot_path):
-        rmtree(cfg.bedrock_bot_path)
-    os.makedirs(cfg.bedrock_bot_path, exist_ok=True)
+    if cfg.path_bedrock_bot:
+        if os.path.exists(cfg.path_bedrock_bot):
+            rmtree(cfg.path_bedrock_bot)
+        os.makedirs(cfg.path_bedrock_bot, exist_ok=True)
 
-    get_latest_release(bedrockbot_repo, cfg.bedrock_bot_path , filename="MCXboxBroadcastStandalone.jar")
+        get_latest_release(bedrockbot_repo, cfg.path_bedrock_bot , filename="MCXboxBroadcastStandalone.jar")
+    else:
+        print("Cannot get connector bot, since download location is not defined")
 
 def get_minecraft_updater(cfg: Config):
-    if os.path.exists(cfg.mc_updater_path):
-        rmtree(cfg.mc_updater_path)
-    Repo.clone_from(f"https://github.com/{minecraft_updater_repo}.git", cfg.mc_updater_path)
+    if cfg.path_mc_updater:
+        if os.path.exists(cfg.path_mc_updater):
+            rmtree(cfg.path_mc_updater)
+        Repo.clone_from(f"https://github.com/{minecraft_updater_repo}.git", cfg.path_mc_updater)
+    else:
+        print("Cannot get Minecraft updater, since download location is not defined")
 
 def update_minecraft_server(cfg: Config):
-    minecraft_updater_path = os.path.expanduser(f"{cfg.mc_updater_path}/updater/mcserver_autoupdater.py")
+    minecraft_updater_path = os.path.expanduser(f"{cfg.path_mc_updater}/updater/mcserver_autoupdater.py")
     subprocess.run(['python3', minecraft_updater_path])
 
 def main(cfg: Config):
