@@ -70,7 +70,10 @@ def drive_backup():
 def update_server():
     pass
 
-def main(mode: Mode):
+def main():
+    mode = get_mode()
+    print(f"[{datetime.now()}] current mode: {mode.value}")
+
     if mode == Mode.NORMAL:
         normal_shutdown()
     elif mode == Mode.UPDATE:
@@ -84,10 +87,5 @@ def main(mode: Mode):
     elif mode == Mode.CONFIGURATION:
         from msm.config import configuration
         configuration.main()
-
-if __name__ == "__main__":
-    mode = get_mode()
-    print(f"[{datetime.now()}] current mode: {mode.value}")
-    main(mode)
 
 
