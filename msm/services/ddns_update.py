@@ -17,6 +17,3 @@ def update_DNS(cfg: Config):
         print(f"[{datetime.now()}] DDNS update successful")
     else:
         print(f"[{datetime.now()}] DDNS update failed:", response.text)
-
-if __name__ == "__main__":
-    update_DNS()
