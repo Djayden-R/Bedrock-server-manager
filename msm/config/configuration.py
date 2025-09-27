@@ -9,7 +9,7 @@ import socket
 # Add the project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, project_root)
-
+from msm.config.load_config import Config
 import msm.core.minecraft_updater
 
 #setup file for new users
@@ -57,7 +57,7 @@ def home_assistant_setup():
     clear_console()
     print("Home Assistant will be used for some automatic tasks, like updating and backups")
     print("But in order to use Home Assistant we will need its ip and token")
-    home_assistant_ip = questionary.text("What is you Home Assistant address?").ask()
+    home_assistant_ip = questionary.text("What is you Home Assistant address?", validate=lambda val: val.startswith("http://") or val.startswith("https://") or "Must start with http:// or https://", default="http://").ask()
     print("Getting your token is fairly easy")
     print("Go to your profile in the bottom-left corner, then to the security tab.\nAt the bottom you will see longlive accesstoken, create one, name it something like Minecraft server manager")
     print("Then paste the token bellow")
@@ -71,7 +71,7 @@ def home_assistant_setup():
     update_entity = questionary.text("Name of switch: ", validate=lambda val: val.beginswith("input_boolean.") or "helper must be a switch", default="input_boolean.")
     return home_assistant_ip, home_assistant_token, auto_shutdown_entity, update_entity
 
-def shutdown_mode_setup():
+def shutdown_mode_setup(drive_enabled):
     clear_console()
     print("This code is made to shutdown your server after a set amount of time where no one is online")
     if questionary.confirm("Would you like to enable that?").ask():
@@ -82,15 +82,25 @@ def shutdown_mode_setup():
         if questionary.confirm("It is also possible to enable certain timeframes where the server will not startup.\nWould you like to enable that?").ask():
             begin_valid_time = int(questionary.text(
                 "Enter the start time in 24h format HH",
-                validate=lambda val: val.isdigit() and 0 <= int(val) < 24 or "Enter a valid time in HH format"
+                validate=lambda val: val.isdigit() and 0 <= int(val.removeprefix("0")) < 24 or "Enter a valid time in HH format"
             ).ask().removeprefix("0"))
             end_valid_time = int(questionary.text(
                 "Enter the end time in 24h format (HH)",
-                validate=lambda val: val.isdigit() and 0 <= int(val) < 24 or "Enter a valid time in HH format"
+                validate=lambda val: val.isdigit() and 0 <= int(val.removeprefix("0")) < 24 or "Enter a valid time in HH format"
             ).ask().removeprefix("0"))
-            return shutdown_time, begin_valid_time, end_valid_time
+        begin_valid_time = end_valid_time = None
     else:
-        return None, None, None
+        shutdown_time = begin_valid_time = end_valid_time = None
+    
+    if drive_enabled:
+        drive_backup_time = int(questionary.text(
+            "At what time do you want the server to createa Google Drive backup?",
+                validate=lambda val: val.isdigit() and 0 <= int(val.removeprefix("0")) < 24 or "Enter a valid time in HH format",
+                default="3"
+                ).ask().removeprefix("0"))
+    else:
+        drive_backup_time = None
+    return shutdown_time, begin_valid_time, end_valid_time, drive_backup_time
 
 def automatic_backups_setup(default_path):
     clear_console()
@@ -187,13 +197,21 @@ def main():
         dynu_password, dynu_domain = dynu_setup()
         config_data["dynu"] = {"pass": dynu_password, "domain": dynu_domain}
 
-    if auto_shutdown:
-        shutdown_time, begin_valid_time, end_valid_time = shutdown_mode_setup()
-        config_data["timing"] = {k: v for k, v in [("shutdown_time", shutdown_time), ("begin_valid", begin_valid_time), ("end_valid", end_valid_time)] if v is not None}
-
     if auto_backup:
-        local_backup_path, hdd_backup_path, drive_backup_path, backup_directories = automatic_backups_setup(program_location)
-        config_data["backup"] = {k: v for k, v in [("local_backup_path", local_backup_path), ("hdd_backup_path", hdd_backup_path), ("drive_backup_path", drive_backup_path), ("backup_directories", backup_directories)] if v is not None}
+        local_backup_path, hdd_backup_path, drive_backup_name, backup_directories = automatic_backups_setup(program_location)
+        config_data["backup"] = {k: v for k, v in [("local_backup_path", local_backup_path), ("hdd_backup_path", hdd_backup_path), ("drive_backup_path", drive_backup_name), ("backup_directories", backup_directories)] if v is not None}
+    else:
+        drive_backup_name = None
+    
+    if auto_backup and drive_backup_name:
+        drive_enabled = True
+    else:
+        drive_enabled = None
+    
+    if auto_shutdown:
+        shutdown_time, begin_valid_time, end_valid_time, drive_backup_time = shutdown_mode_setup(drive_enabled)
+        config_data["timing"] = {k: v for k, v in [("shutdown_time", shutdown_time), ("begin_valid", begin_valid_time), ("end_valid", end_valid_time), ("drive_backup", drive_backup_time)] if v is not None}
+
 
     clear_console()
     mc_ip = get_minecraft_ip()
@@ -209,12 +227,8 @@ def main():
     if dynu or home_assistant:
         print("Never share this file with anyone as it will give access to all of the services you configured")
     
-    #we don't have a config yet, so we need to pass a fake config to the functions
-    class FakeConfig:
-        def __init__(self):
-            self.bedrock_bot_path = os.path.join(project_root, "bedrock_connector")
-            self.mc_updater_path = os.path.join(project_root, "minecraft_updater")
-    cfg = FakeConfig()
+    #load config we just saved
+    cfg = Config()
 
     #ask permission to download the repositories
     print("This program can uses MCXboxBroadcast/Broadcaster to make it possible for console players to join the server")
