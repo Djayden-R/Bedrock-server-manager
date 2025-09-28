@@ -199,7 +199,7 @@ def main():
 
     if auto_backup:
         local_backup_path, hdd_backup_path, drive_backup_name, backup_directories = automatic_backups_setup(program_location)
-        config_data["backup"] = {k: v for k, v in [("local_backup_path", local_backup_path), ("hdd_backup_path", hdd_backup_path), ("drive_backup_path", drive_backup_name), ("backup_directories", backup_directories)] if v is not None}
+        config_data["backup"] = {k: v for k, v in [("local_backup_path", local_backup_path), ("hdd_backup_path", hdd_backup_path), ("drive_backup_path", drive_backup_name), ("directories", backup_directories)] if v is not None}
     else:
         drive_backup_name = None
     
