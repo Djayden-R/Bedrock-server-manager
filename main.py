@@ -3,6 +3,7 @@ from msm.services.server_status import start_checking_playercount
 from msm.services.check_ha_switch import entity_status
 from msm.config.load_config import Config
 import msm.core.backup as backup
+from msm.core.minecraft_updater import get_bedrock_bot, update_minecraft_server
 import sys
 from datetime import datetime
 from enum import Enum
@@ -68,7 +69,8 @@ def drive_backup():
     shutdown()
 
 def update_server():
-    pass
+    get_bedrock_bot(cfg)
+    update_minecraft_server(cfg)
 
 def main():
     mode = get_mode()
