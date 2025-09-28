@@ -114,32 +114,32 @@ def automatic_backups_setup(default_path):
     drive_backup = "Drive backup" in backup_options
 
     if local_backup:
-        local_backup_path = questionary.path(
+        local_path = questionary.path(
             "Where do you want to save the local backups?",
             default=os.path.join(default_path, "backups"),
             only_directories=True
         ).ask()
     else:
-        local_backup_path = None
+        local_path = None
     
     if hdd_backup:
-        hdd_backup_path = questionary.path(
+        hdd_path = questionary.path(
             "Where do you want to save the external drive backups?",
             default="/mnt",
             only_directories=True
         ).ask() 
     else:
-        hdd_backup_path = None
+        hdd_path = None
     if drive_backup:
         print("You will need rclone for drive backups, so make sure you have it set up")
-        drive_backup_path = questionary.text(
+        drive_name = questionary.text(
             "What is the name of your rclone remote? (something like 'drive:')",
             validate=lambda val: val.endswith(":") or "Remote name must end with ':'"
         ).ask()
     else:
-        drive_backup_path = None
+        drive_name = None
 
-    backup_directories = []
+    directories = []
     while True:
         directory = questionary.path(
             "Enter a directory to back up (or leave blank to finish):",
@@ -148,8 +148,8 @@ def automatic_backups_setup(default_path):
         ).ask()
         if not directory:
             break
-        backup_directories.append(directory)
-    return local_backup_path, hdd_backup_path, drive_backup_path, backup_directories
+        directories.append(directory)
+    return local_path, hdd_path, drive_name, directories
 
 def get_minecraft_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -198,19 +198,19 @@ def main():
         config_data["dynu"] = {"pass": dynu_password, "domain": dynu_domain}
 
     if auto_backup:
-        local_backup_path, hdd_backup_path, drive_backup_name, backup_directories = automatic_backups_setup(program_location)
-        config_data["backup"] = {k: v for k, v in [("local_backup_path", local_backup_path), ("hdd_backup_path", hdd_backup_path), ("drive_backup_path", drive_backup_name), ("directories", backup_directories)] if v is not None}
+        local_path, hdd_path, drive_name, directories = automatic_backups_setup(program_location)
+        config_data["backup"] = {k: v for k, v in [("local_path", local_path), ("hdd_path", hdd_path), ("drive_name", drive_name), ("directories", directories)] if v is not None}
     else:
-        drive_backup_name = None
+        drive_name = None
     
-    if auto_backup and drive_backup_name:
+    if auto_backup and drive_name:
         drive_enabled = True
     else:
         drive_enabled = None
     
     if auto_shutdown:
         shutdown_time, begin_valid_time, end_valid_time, drive_backup_time = shutdown_mode_setup(drive_enabled)
-        config_data["timing"] = {k: v for k, v in [("shutdown_time", shutdown_time), ("begin_valid", begin_valid_time), ("end_valid", end_valid_time), ("drive_backup", drive_backup_time)] if v is not None}
+        config_data["timing"] = {k: v for k, v in [("shutdown", shutdown_time), ("begin_valid", begin_valid_time), ("end_valid", end_valid_time), ("drive_backup", drive_backup_time)] if v is not None}
 
 
     clear_console()
