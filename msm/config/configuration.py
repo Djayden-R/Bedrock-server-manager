@@ -228,7 +228,7 @@ def main():
         print("Never share this file with anyone as it will give access to all of the services you configured")
     
     #load config we just saved
-    cfg = Config()
+    cfg = Config.load()
 
     #ask permission to download the repositories
     print("This program can uses MCXboxBroadcast/Broadcaster to make it possible for console players to join the server")
