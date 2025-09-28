@@ -166,9 +166,13 @@ def main():
 
     clear_console()
 
+    #gather all variables and save them to a dictionary
+    config_data = {}
+
     program_location = os.path.realpath(__file__).removesuffix("\\msm\\config\\configuration.py").removesuffix("/msm/config/configuration.py")
     if questionary.confirm(f"Are you sure you want to use this location:\n {program_location} \nfor this program?").ask():
         print("Great, let's continue")
+        config_data["path"] = {"base": program_location}
     else:
         print("Please move this program to the location you want to use and run it again.")
         time.sleep(3)
@@ -184,10 +188,6 @@ def main():
     dynu = "Dynu DNS" in services
     auto_shutdown = "Automatic shutdown" in services
     auto_backup = "Automatic backups" in services
-
-
-    #gather all variables and save them to a dictionary
-    config_data = {}
 
     if home_assistant:
         ha_ip, ha_token, auto_shutdown_entity, update_entity = home_assistant_setup()
