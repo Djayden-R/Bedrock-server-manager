@@ -32,8 +32,7 @@ class Config:
     timing_drive_backup: Optional[int] = None
 
     # Paths
-    path_bedrock_bot: Optional[str] = None
-    path_mc_updater: Optional[str] = None
+    path_base: Optional[str] = None
 
     @classmethod
     def load(cls, path: Path = Path("msm/config/config.yaml").resolve()) -> "Config":
