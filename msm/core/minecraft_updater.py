@@ -4,6 +4,7 @@ import os
 import subprocess
 from msm.config.load_config import Config
 from shutil import rmtree
+from pathlib import Path
 
 bedrockbot_repo = "MCXboxBroadcast/Broadcaster"
 minecraft_updater_repo = "ghwns9652/Minecraft-Bedrock-Server-Updater"
@@ -43,26 +44,32 @@ def get_latest_release(repo_name, download_location, filename=None):
                 print("Problem during download")
 
 def get_bedrock_bot(cfg: Config):
-    if cfg.path_bedrock_bot:
-        if os.path.exists(cfg.path_bedrock_bot):
-            rmtree(cfg.path_bedrock_bot)
-        os.makedirs(cfg.path_bedrock_bot, exist_ok=True)
+    if cfg.path_base:
+        bedrock_bot_path = os.path.join(cfg.path_base, "bedrock_connector")
+        if os.path.exists(bedrock_bot_path):
+            rmtree(bedrock_bot_path)
+        os.makedirs(bedrock_bot_path, exist_ok=True)
 
-        get_latest_release(bedrockbot_repo, cfg.path_bedrock_bot , filename="MCXboxBroadcastStandalone.jar")
+        get_latest_release(bedrockbot_repo, bedrock_bot_path, filename="MCXboxBroadcastStandalone.jar")
     else:
-        print("Cannot get connector bot, since download location is not defined")
+        print("Cannot get connector bot, since base path is not defined")
 
 def get_minecraft_updater(cfg: Config):
-    if cfg.path_mc_updater:
-        if os.path.exists(cfg.path_mc_updater):
-            rmtree(cfg.path_mc_updater)
-        Repo.clone_from(f"https://github.com/{minecraft_updater_repo}.git", cfg.path_mc_updater)
+    if cfg.path_base:
+        mc_updater_path = os.path.join(cfg.path_base, "minecraft_updater")
+        if os.path.exists(mc_updater_path):
+            rmtree(mc_updater_path)
+        Repo.clone_from(f"https://github.com/{minecraft_updater_repo}.git", mc_updater_path)
     else:
         print("Cannot get Minecraft updater, since download location is not defined")
 
 def update_minecraft_server(cfg: Config):
-    minecraft_updater_path = os.path.expanduser(f"{cfg.path_mc_updater}/updater/mcserver_autoupdater.py")
-    subprocess.run(['python3', minecraft_updater_path])
+    if cfg.path_base:
+        mc_updater_path = os.path.join(cfg.path_base, "minecraft_updater")
+        minecraft_updater_path = os.path.expanduser(f"{mc_updater_path}/updater/mcserver_autoupdater.py")
+        subprocess.run(['python3', minecraft_updater_path])
+    else:
+        print("Cannot update Minecraft server, since base path is not defined")
 
 def main(cfg: Config):
     get_bedrock_bot(cfg)
