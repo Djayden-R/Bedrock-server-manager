@@ -35,7 +35,7 @@ def get_mode():
     time = datetime.now()
     hour = time.hour
     print(f"[{datetime.now()}] current hour: {hour}")
-    if hour_valid(hour):
+    if not (cfg.timing_begin_valid and cfg.timing_end_valid) or hour_valid(hour):
         if entity_status(cfg, cfg.ha_update_entity):
             return Mode.UPDATE
         else:
