@@ -170,7 +170,7 @@ def main():
     config_data = {}
 
     program_location = os.path.realpath(__file__).removesuffix("\\msm\\config\\configuration.py").removesuffix("/msm/config/configuration.py")
-    if questionary.confirm(f"Are you sure you want to use this location:\n {program_location} \nfor this program?").ask():
+    if questionary.confirm(f"{program_location} \nAre you sure you want to use the above location for this program?").ask():
         print("Great, let's continue")
         config_data["path"] = {"base": program_location}
     else:
