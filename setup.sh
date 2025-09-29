@@ -14,4 +14,4 @@ source venv/bin/activate
 
 #install and run the program
 pip install -e .
-minecraft-server-manager
+bedrock-server-manager
