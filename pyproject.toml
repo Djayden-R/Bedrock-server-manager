@@ -3,14 +3,15 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "minecraft-server-manager"
+name = "bedrock-server-manager"
 version = "0.1.0"
-description = "Automated Minecraft Bedrock server management tool with backup, updating, and Home Assistant integration"
+description = "Bedrock server manager with backup, updating, DNS, and Home Assistant integration"
 authors = [
     {name = "Djayden-R"}
 ]
 readme = "README.md"
 requires-python = ">=3.11"
+license = {text = "MIT"}
 
 dependencies = [
     "mcstatus>=11.0.0",
@@ -23,7 +24,7 @@ dependencies = [
 ]
 
 [project.scripts]
-minecraft-server-manager = "main:main"
+bedrock-server-manager = "main:main"
 
 [tool.setuptools.packages.find]
 include = ["msm*"]
