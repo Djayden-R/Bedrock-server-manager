@@ -1,4 +1,6 @@
 # Minecraft Bedrock Server Manager
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)![Platform](https://img.shields.io/badge/platform-Ubuntu-orange)![GitHub last commit](https://img.shields.io/github/last-commit/Djayden-R/Minecraft-bedrock-server-manager)
+
 An automated management tool for a bedrock server. It will handle updating, shutting down, making backups, handling a dynamic dns, and even connecting players on a console to the server.
 
 ## How this works
@@ -36,3 +38,8 @@ Since the program is installed inside a virtual environment you will need to run
 
 ## Extra Step
 I recommend setting up a .service file that automatically starts the program, this way the server only has to be turned on to just work. For turning on the server I use a Discord bot that runs on Home Assistant and sends a WoL signal to the server.
+
+## Credit
+Thanks to these two projects for making this program possible
+- Uses [Broadcaster](https://github.com/MCXboxBroadcast/Broadcaster) (GPL-3.0 License)
+- Uses [Minecraft-Bedrock-Server-Updater](https://github.com/ghwns9652/Minecraft-Bedrock-Server-Updater) (MIT License)
