@@ -1,5 +1,5 @@
-# Minecraft Bedrock Server Manager
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)![Platform](https://img.shields.io/badge/platform-Ubuntu-orange)![GitHub last commit](https://img.shields.io/github/last-commit/Djayden-R/Minecraft-bedrock-server-manager)
+# Bedrock Server Manager
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)![Platform](https://img.shields.io/badge/platform-Ubuntu-orange)![GitHub last commit](https://img.shields.io/github/last-commit/Djayden-R/Bedrock-server-manager)
 
 An automated management tool for a bedrock server. It will handle updating, shutting down, making backups, handling a dynamic dns, and even connecting players on a console to the server.
 
@@ -17,8 +17,8 @@ This program has only been tested on Ubuntu. It is therefore recommended you use
 ## How to run
 ### 1. First time setup
 ```bash
-git clone https://github.com/Djayden-R/Minecraft-bedrock-server-manager.git
-cd Minecraft-bedrock-server-manager
+git clone https://github.com/Djayden-R/Bedrock-server-manager.git
+cd Bedrock-server-manager
 chmod +x setup.sh
 ./setup.sh
 ```
@@ -26,7 +26,7 @@ This will run the setup process and will ask you all the questions needed for se
 
 ### 2. Normal operation
 ```bash
-./venv/bin/minecraft-server-manager
+./venv/bin/bedrock-server-manager
 ```
 Since the program is installed inside a virtual environment you will need to run the program like this
 
@@ -43,3 +43,6 @@ I recommend setting up a .service file that automatically starts the program, th
 Thanks to these two projects for making this program possible
 - Uses [Broadcaster](https://github.com/MCXboxBroadcast/Broadcaster) (GPL-3.0 License)
 - Uses [Minecraft-Bedrock-Server-Updater](https://github.com/ghwns9652/Minecraft-Bedrock-Server-Updater) (MIT License)
+
+## What was done by AI?
+Ai was used in the making of this project, but only on the pyproject.toml, for load_config.py and for some general research.
