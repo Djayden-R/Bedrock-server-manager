@@ -38,7 +38,7 @@ def backup_HDD(cfg: Config, backup_path, foldername):
     if not cfg.backup_hdd_path or not os.path.exists(cfg.backup_hdd_path):
         raise ValueError("HDD backup directory not found")
     else:
-        subprocess.run(["cp", backup_path, f"{cfg.backup_hdd_path}/{foldername}"])
+        shutil.copy(backup_path, f"{cfg.backup_hdd_path}/{foldername}")
         print("Backup copied to hardrive")
 
 def backup_drive(cfg: Config, backup_symlink, folder, filename):
@@ -83,7 +83,7 @@ def quick_backup(cfg: Config):
     backup_path, backup_name, folder_name = generate_file_name(cfg)
 
     local_folder = f"{cfg.backup_local_path}/{folder_name}"
-    hdd_folder = f"{cfg.backup_local_path}/{folder_name}"
+    hdd_folder = f"{cfg.backup_hdd_path}/{folder_name}"
 
     for folder in [local_folder, hdd_folder]:
         if not os.path.exists(folder):
