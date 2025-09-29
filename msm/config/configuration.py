@@ -5,10 +5,6 @@ import questionary
 import os
 import yaml
 import socket
-
-# Add the project root to Python path
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, project_root)
 from msm.config.load_config import Config
 import msm.core.minecraft_updater
 
@@ -59,7 +55,7 @@ def home_assistant_setup():
     print("But in order to use Home Assistant we will need its ip and token")
     home_assistant_ip = questionary.text("What is you Home Assistant address?", validate=lambda val: val.startswith("http://") or val.startswith("https://") or "Must start with http:// or https://", default="http://").ask()
     print("Getting your token is fairly easy")
-    print("Go to your profile in the bottom-left corner, then to the security tab.\nAt the bottom you will see longlive accesstoken, create one, name it something like Minecraft server manager")
+    print("Go to your profile in the bottom-left corner, then to the security tab.\nAt the bottom you will see longlive accesstoken, create one, name it something like Bedrock server manager")
     print("Then paste the token bellow")
     home_assistant_token = questionary.password("Home Assistant token:").ask()
     clear_console()
@@ -160,7 +156,7 @@ def get_minecraft_ip():
 
 def main():
     print("Hi, there!")
-    print("This is a program for fully managing your minecraft server")
+    print("This is a program for fully managing your bedrock server")
 
     linux_check()
 
@@ -180,14 +176,24 @@ def main():
     
     questionary.press_any_key_to_continue("I am going to ask you a few questions to set everything up.").ask()
 
-    services = questionary.checkbox(
-    "What services do you want to set up?", choices=["Home Assistant", "Dynu DNS", "Automatic shutdown", "Automatic backups"]).ask()
+
+    """ 
+    DISABELED SERVICE SELECTION
+    Don't have time to make services optional yet
+    This will be implemented in the future
+    """
+
+    # services = questionary.checkbox(
+    # "What services do you want to set up?", choices=["Home Assistant", "Dynu DNS", "Automatic shutdown", "Automatic backups"]).ask()
 
 
-    home_assistant = "Home Assistant" in services
-    dynu = "Dynu DNS" in services
-    auto_shutdown = "Automatic shutdown" in services
-    auto_backup = "Automatic backups" in services
+    # home_assistant = "Home Assistant" in services
+    # dynu = "Dynu DNS" in services
+    # auto_shutdown = "Automatic shutdown" in services
+    # auto_backup = "Automatic backups" in services
+
+
+    home_assistant = dynu = auto_backup = auto_shutdown = True
 
     if home_assistant:
         ha_ip, ha_token, auto_shutdown_entity, update_entity = home_assistant_setup()
