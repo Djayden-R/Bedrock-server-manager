@@ -67,9 +67,17 @@ def update_minecraft_server(cfg: Config):
     if cfg.path_base:
         mc_updater_path = os.path.join(cfg.path_base, "minecraft_updater")
         minecraft_updater_path = os.path.expanduser(f"{mc_updater_path}/updater/mcserver_autoupdater.py")
-        subprocess.run(['python3', minecraft_updater_path])
+        minecraft_updater_output = str(subprocess.run(['python3', minecraft_updater_path], shell=True))
+        if "minecraft server is already newest version" in minecraft_updater_output:
+            print("Nothing to update, starting server")
+            return True
+        elif "minecraft server is updated" in minecraft_updater_output:
+            print("Minecrat server successfully updated and started")
+            return False
+        else:
+            raise ValueError(f"Unknown state: {minecraft_updater_output}")
     else:
-        print("Cannot update Minecraft server, since base path is not defined")
+        raise ValueError("Cannot update Minecraft server, since base path is not defined")
 
 def main(cfg: Config):
     get_bedrock_bot(cfg)
