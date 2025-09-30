@@ -2,9 +2,8 @@ from msm.services.ddns_update import update_DNS
 from msm.services.server_status import start_checking_playercount
 from msm.services.check_ha_switch import entity_status
 from msm.config.load_config import Config
-from msm.core.minecraft_updater import update_minecraft_server
 import msm.core.backup as backup
-from msm.core.minecraft_updater import get_bedrock_bot, update_minecraft_server
+from msm.core.minecraft_updater import get_console_bridge, update_minecraft_server
 import sys
 from datetime import datetime
 from enum import Enum
@@ -60,6 +59,8 @@ def normal_shutdown():
     update_DNS(cfg)
     if not update_minecraft_server(cfg): #if server wasn't updated, start the server manually
         start_server(cfg)
+    else:
+        get_console_bridge(cfg) #if server needed an update, also update the console bridge
     
     while True:
         if start_checking_playercount(cfg):
@@ -82,7 +83,7 @@ def drive_backup():
     shutdown()
 
 def update_server():
-    get_bedrock_bot(cfg)
+    get_console_bridge(cfg)
     update_minecraft_server(cfg)
 
 def main():
