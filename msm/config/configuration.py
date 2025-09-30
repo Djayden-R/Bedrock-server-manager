@@ -242,6 +242,8 @@ def main():
         msm.core.minecraft_updater.get_console_bridge(cfg)
     msm.core.minecraft_updater.get_minecraft_updater(cfg)
     msm.core.minecraft_updater.update_minecraft_server(cfg)
+    print("To make this code work, first reboot this computer and then run 'bsm'")
+    print("If you want the code to run on boot, follow the tutorial inside the README.md")
 
 if __name__ == "__main__":
     main()
