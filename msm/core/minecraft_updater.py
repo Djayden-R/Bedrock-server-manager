@@ -77,15 +77,15 @@ def update_minecraft_server(cfg: Config):
     if cfg.path_base:
         mc_updater_path = os.path.join(cfg.path_base, "minecraft_updater")
         minecraft_updater_path = os.path.expanduser(f"{mc_updater_path}/updater/mcserver_autoupdater.py")
-        minecraft_updater_output = subprocess.run(['python3', minecraft_updater_path], capture_output=True, text=True).stdout
-        if "minecraft server is already newest version" in minecraft_updater_output:
+        minecraft_updater_output = subprocess.run(['python3', minecraft_updater_path], capture_output=True, text=True)
+        if "minecraft server is already newest version" in minecraft_updater_output.stdout:
             print("Nothing to update, starting server")
             return True
-        elif "minecraft server is updated" in minecraft_updater_output:
+        elif "minecraft server is updated" in minecraft_updater_output.stdout:
             print("Minecrat server successfully updated and started")
             return False
         else:
-            raise ValueError(f"Unknown state: {minecraft_updater_output}")
+            raise ValueError(f"Unknown state: {minecraft_updater_output.stdout} \nerror: {minecraft_updater_output.stderr}")
     else:
         raise ValueError("Cannot update Minecraft server, since base path is not defined")
 
