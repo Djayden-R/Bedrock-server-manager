@@ -66,8 +66,10 @@ def get_minecraft_updater(cfg: Config):
                     rmtree(mc_updater_path)
                 else:
                     print("Didn't update minecraft_updater")
+            else:
+                rmtree(mc_updater_path)
                 
-        Repo.clone_from(f"https://github.com/{minecraft_updater_repo}.git", mc_updater_path)
+        Repo.clone_from(f"https://github.com/{minecraft_updater_repo}.git", mc_updater_path, )
     else:
         print("Cannot get Minecraft updater, since download location is not defined")
 
