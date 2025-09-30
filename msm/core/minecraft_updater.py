@@ -80,10 +80,10 @@ def update_minecraft_server(cfg: Config):
         minecraft_updater_output = subprocess.run(['python3', minecraft_updater_path], capture_output=True, text=True)
         if "minecraft server is already newest version" in minecraft_updater_output.stdout:
             print("Nothing to update, starting server")
-            return True
+            return False
         elif "minecraft server is updated" in minecraft_updater_output.stdout:
             print("Minecraft server successfully updated and started")
-            return False
+            return True
         else:
             raise ValueError(f"Unknown state: {minecraft_updater_output.stdout} \nerror: {minecraft_updater_output.stderr}")
     else:

@@ -7,7 +7,6 @@ from msm.core.minecraft_updater import get_console_bridge, update_minecraft_serv
 import sys
 from datetime import datetime
 from enum import Enum
-from pathlib import Path
 import subprocess
 import os
 
@@ -18,8 +17,9 @@ class Mode(Enum):
     CONFIGURATION = "config" #go through set-up process
 
 def shutdown():
-	with open("/tmp/mc_ready","w") as f:
-		f.write("done")
+    print("Shutting down in 10 seconds")
+    print("ctrl + c to cancel")
+    subprocess.run("sudo shutdown now")
 
 def hour_valid(hour):
     return cfg.timing_begin_valid < hour < cfg.timing_end_valid
@@ -51,11 +51,12 @@ def start_server(cfg: Config):
 
 def normal_operation():
     update_DNS(cfg)
-    if not update_minecraft_server(cfg): #if server wasn't updated, start the server manually
+    if update_minecraft_server(cfg): #if server needed an update, also update the console bridge
+        get_console_bridge(cfg)
+        shutdown()
+    else: #if server wasn't updated, start the server manually
         start_server(cfg)
-    else:
-        get_console_bridge(cfg) #if server needed an update, also update the console bridge
-    
+        
     while True:
         if start_checking_playercount(cfg):
             if entity_status(cfg, cfg.ha_shutdown_entity):
