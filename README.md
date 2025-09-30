@@ -69,4 +69,4 @@ This project integrates the following open-source tools:
 
 ## Development Notes
 
-AI assistance was utilized for specific components: `pyproject.toml` configuration, `load_config.py` implementation, and formatting of the README.md.
+AI assistance was utilized for specific components: `pyproject.toml` configuration, `load_config.py` implementation, and formatting of the `README.md`.
