@@ -15,7 +15,6 @@ class Mode(Enum):
     NORMAL = "normal" #normal operating mode, shutdown after 3 minutes with local backup and hdd backup
     DRIVE_BACKUP = "drive backup" #just backup to google drive, then shutdown
     INVALID = "invalid time" #boot up at an invalid time, just shutdown
-    UPDATE = "update" #update the server
     CONFIGURATION = "config" #go through set-up process
 
 def shutdown():
@@ -39,9 +38,6 @@ def get_mode():
     hour = time.hour
     print(f"[{datetime.now()}] current hour: {hour}")
     if not (cfg.timing_begin_valid and cfg.timing_end_valid) or hour_valid(hour):
-        if entity_status(cfg, cfg.ha_update_entity):
-            return Mode.UPDATE
-        else:
             return Mode.NORMAL
     elif hour == cfg.timing_drive_backup:
         return Mode.DRIVE_BACKUP
@@ -55,7 +51,7 @@ def start_server(cfg: Config):
     else:
         raise ValueError("Base path is not defined")
 
-def normal_shutdown():
+def normal_operation():
     update_DNS(cfg)
     if not update_minecraft_server(cfg): #if server wasn't updated, start the server manually
         start_server(cfg)
@@ -91,9 +87,7 @@ def main():
     print(f"[{datetime.now()}] current mode: {mode.value}")
 
     if mode == Mode.NORMAL:
-        normal_shutdown()
-    elif mode == Mode.UPDATE:
-        update_server()
+        normal_operation()
     elif mode == Mode.DRIVE_BACKUP:
         drive_backup()
     elif mode == Mode.INVALID:

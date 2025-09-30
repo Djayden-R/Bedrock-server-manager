@@ -63,9 +63,7 @@ def home_assistant_setup():
     print("First make a switch for turning on and off auto shutdown (useful for debugging)")
     print("Go to settings > devices and services > helpers > add (switch)")
     auto_shutdown_entity = questionary.text("Name of switch: ", validate=lambda val: val.startswith("input_boolean.") or "helper must be a switch", default="input_boolean.").ask()
-    print("Now add one for requesting an update for the server")
-    update_entity = questionary.text("Name of switch: ", validate=lambda val: val.startswith("input_boolean.") or "helper must be a switch", default="input_boolean.").ask()
-    return home_assistant_ip, home_assistant_token, auto_shutdown_entity, update_entity
+    return home_assistant_ip, home_assistant_token, auto_shutdown_entity
 
 def shutdown_mode_setup(drive_enabled):
     clear_console()
@@ -196,8 +194,8 @@ def main():
     home_assistant = dynu = auto_backup = auto_shutdown = True
 
     if home_assistant:
-        ha_ip, ha_token, auto_shutdown_entity, update_entity = home_assistant_setup()
-        config_data["ha"] = {"ip": ha_ip, "token": ha_token, "shutdown_entity": auto_shutdown_entity, "update_entity": update_entity}
+        ha_ip, ha_token, auto_shutdown_entity = home_assistant_setup()
+        config_data["ha"] = {"ip": ha_ip, "token": ha_token, "shutdown_entity": auto_shutdown_entity}
 
     if dynu:
         dynu_password, dynu_domain = dynu_setup()
