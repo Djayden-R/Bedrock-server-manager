@@ -55,7 +55,7 @@ def home_assistant_setup():
     print("But in order to use Home Assistant we will need its ip and token")
     home_assistant_ip = questionary.text("What is you Home Assistant address?", validate=lambda val: val.startswith("http://") or val.startswith("https://") or "Must start with http:// or https://", default="http://").ask()
     print("Getting your token is fairly easy")
-    print("Go to your profile in the bottom-left corner, then to the security tab.\nAt the bottom you will see longlive accesstoken, create one, name it something like Bedrock server manager")
+    print("Go to your profile in the bottom-left corner, then to the security tab.\nAt the bottom you will see long lived access token, create one, name it something like Bedrock server manager")
     print("Then paste the token bellow")
     home_assistant_token = questionary.password("Home Assistant token:").ask()
     clear_console()
@@ -88,7 +88,7 @@ def shutdown_mode_setup(drive_enabled):
     
     if drive_enabled:
         drive_backup_time = int(questionary.text(
-            "At what time do you want the server to createa Google Drive backup?",
+            "At what time do you want the server to create drive backup?",
                 validate=lambda val: val.isdigit() and 0 <= int(val.removeprefix("0")) < 24 or "Enter a valid time in HH format",
                 default="3"
                 ).ask().removeprefix("0"))
@@ -176,7 +176,7 @@ def main():
 
 
     """ 
-    DISABELED SERVICE SELECTION
+    DISABLED SERVICE SELECTION
     Don't have time to make services optional yet
     This will be implemented in the future
     """

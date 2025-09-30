@@ -82,7 +82,7 @@ def update_minecraft_server(cfg: Config):
             print("Nothing to update, starting server")
             return True
         elif "minecraft server is updated" in minecraft_updater_output.stdout:
-            print("Minecrat server successfully updated and started")
+            print("Minecraft server successfully updated and started")
             return False
         else:
             raise ValueError(f"Unknown state: {minecraft_updater_output.stdout} \nerror: {minecraft_updater_output.stderr}")
