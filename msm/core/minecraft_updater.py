@@ -58,10 +58,11 @@ def get_minecraft_updater(cfg: Config):
     if cfg.path_base:
         mc_updater_path = os.path.join(cfg.path_base, "minecraft_updater")
         if os.path.exists(mc_updater_path):
-            if len(os.listdir()) > 1:
+            if len(os.listdir(mc_updater_path)) > 1:
+                print(os.listdir(mc_updater_path))
                 print("WARNING - The Minecraft updater is already downloaded")
                 print("Continuing could mean that your Minecraft world will be overwritten")
-                if questionary.text("Confirm by writing 'DELETE", ).ask() == "DELETE":
+                if questionary.text("Confirm by writing 'DELETE':", ).ask() == "DELETE":
                     rmtree(mc_updater_path)
                 else:
                     print("Didn't update minecraft_updater")
@@ -74,7 +75,7 @@ def update_minecraft_server(cfg: Config):
     if cfg.path_base:
         mc_updater_path = os.path.join(cfg.path_base, "minecraft_updater")
         minecraft_updater_path = os.path.expanduser(f"{mc_updater_path}/updater/mcserver_autoupdater.py")
-        minecraft_updater_output = str(subprocess.run(['python3', minecraft_updater_path], shell=True))
+        minecraft_updater_output = subprocess.run(['python3', minecraft_updater_path], capture_output=True, text=True).stdout
         if "minecraft server is already newest version" in minecraft_updater_output:
             print("Nothing to update, starting server")
             return True
