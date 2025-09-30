@@ -60,7 +60,7 @@ def home_assistant_setup():
     print("Then paste the token bellow")
     home_assistant_token = questionary.password("Home Assistant token:").ask()
     clear_console()
-    print("Now we have to set up two switches")
+    print("Now we have to set up a switch")
     print("First make a switch for turning on and off auto shutdown (useful for debugging)")
     print("Go to settings > devices and services > helpers > add (switch)")
     auto_shutdown_entity = questionary.text("Name of switch: ", validate=lambda val: val.startswith("input_boolean.") or "helper must be a switch", default="input_boolean.").ask()
