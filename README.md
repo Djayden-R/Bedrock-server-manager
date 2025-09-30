@@ -10,15 +10,14 @@ An automated management tool for a bedrock server. It will handle updating, shut
 
 After setup, the program determines which mode to run based on configuration and timing:
 
-- **NORMAL** - Standard operating mode that starts the server with automatic shutdown after inactivity
+- **NORMAL** - Standard operating mode that updates the DNS and then updates the server if needed and lastly starts the server with automatic shutdown after inactivity
 - **DRIVE_BACKUP** - Initiates backup to online drive using the latest symlink via Rclone  
 - **INVALID** - Triggered when server starts outside configured valid hours
-- **UPDATE** - Activated when Home Assistant update switch is enabled during boot
 - **CONFIGURATION** - First-time setup mode when no config.yaml exists
 
 ## Prerequisites
 
-> **Note:** This program has been tested exclusively on Ubuntu. Ubuntu is the recommended platform. For drive backup functionality, Rclone must be configured separately.
+> **Note:** This program has been tested exclusively on Ubuntu. Ubuntu is the recommended platform. For drive backup functionality, Rclone must be configured separately (tutorial below).
 
 ## Installation
 
@@ -58,11 +57,13 @@ bsm
 - **Intelligent Scheduling** - Configurable operating hours and automatic shutdown timeouts
 - **Dynamic DNS** - DynuDNS integration for consistent server addressing
 
-## Production Deployment
+## Extra tutorials
 
-For automated server management, consider setting up a systemd service file. This enables the server to start automatically on boot.
+To automatically start this program on boot, follow [**this tutorial**](https://www.youtube.com/watch?v=Un9ASbGCN0U).
 
-**Additional Setup:** The author uses a Discord bot running on Home Assistant to send Wake-on-LAN signals for remote server startup.
+To configure Rclone follow one of these tutorials:
+- [**for Google Drive**](https://www.youtube.com/watch?v=FQuMFrazK1Y)
+- [**for Onedrive**](https://www.youtube.com/watch?v=dTFt2DkOde4)
 
 ## Acknowledgments
 
