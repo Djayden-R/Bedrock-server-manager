@@ -41,8 +41,8 @@ I recommend setting up a .service file that automatically starts the program, th
 
 ## Credit
 Thanks to these two projects for making this program possible
-- Uses [Broadcaster](https://github.com/MCXboxBroadcast/Broadcaster) (GPL-3.0 License)
-- Uses [Minecraft-Bedrock-Server-Updater](https://github.com/ghwns9652/Minecraft-Bedrock-Server-Updater) (MIT License)
+- Uses [Broadcaster](https://github.com/MCXboxBroadcast/Broadcaster) (GPL-3.0 License) (referred to as console bridge)
+- Uses [Minecraft-Bedrock-Server-Updater](https://github.com/ghwns9652/Minecraft-Bedrock-Server-Updater) (MIT License) (referred to as minecraft updater)
 
 ## What was done by AI?
 Ai was used in the making of this project, but only on the pyproject.toml, for load_config.py and for some general research.

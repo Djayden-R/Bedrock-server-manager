@@ -28,7 +28,7 @@ bedrock-server-manager = "main:main"
 
 [tool.setuptools.packages.find]
 include = ["msm*"]
-exclude = ["bedrock_connector*", "minecraft_updater*", "tests*"]
+exclude = ["console_bridge*", "minecraft_updater*", "tests*"]
 
 [tool.setuptools.package-dir]
 "" = "."
