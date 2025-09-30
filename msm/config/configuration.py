@@ -111,8 +111,8 @@ def automatic_backups_setup(default_path):
 
     if local_backup:
         local_path = questionary.path(
-            "Where do you want to save the local backups?",
-            default=os.path.join(default_path, "backups"),
+            "Where do you want to save the local backups?\nIt is not recommended to choose the main folder for this project, since the backups could then contain previous backups",
+            default=os.path.join(default_path.removesuffix("Bedrock-server-manager"), "backups"),
             only_directories=True
         ).ask()
     else:
