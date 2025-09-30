@@ -4,9 +4,9 @@ import os
 import subprocess
 from msm.config.load_config import Config
 from shutil import rmtree
-from pathlib import Path
+import questionary
 
-bedrockbot_repo = "MCXboxBroadcast/Broadcaster"
+console_bridge_repo = "MCXboxBroadcast/Broadcaster"
 minecraft_updater_repo = "ghwns9652/Minecraft-Bedrock-Server-Updater"
 
 def download(url, file_path):
@@ -43,22 +43,28 @@ def get_latest_release(repo_name, download_location, filename=None):
             else:
                 print("Problem during download")
 
-def get_bedrock_bot(cfg: Config):
+def get_console_bridge(cfg: Config):
     if cfg.path_base:
-        bedrock_bot_path = os.path.join(cfg.path_base, "bedrock_connector")
-        if os.path.exists(bedrock_bot_path):
-            rmtree(bedrock_bot_path)
-        os.makedirs(bedrock_bot_path, exist_ok=True)
+        console_bridge_path = os.path.join(cfg.path_base, "console_bridge", "MCXboxBroadcastStandalone.jar")
+        if os.path.exists(console_bridge_path):
+            os.remove(console_bridge_path)
 
-        get_latest_release(bedrockbot_repo, bedrock_bot_path, filename="MCXboxBroadcastStandalone.jar")
+        get_latest_release(console_bridge_repo, console_bridge_path, filename="MCXboxBroadcastStandalone.jar")
     else:
-        print("Cannot get connector bot, since base path is not defined")
+        print("Cannot get console bridge, since base path is not defined")
 
 def get_minecraft_updater(cfg: Config):
     if cfg.path_base:
         mc_updater_path = os.path.join(cfg.path_base, "minecraft_updater")
         if os.path.exists(mc_updater_path):
-            rmtree(mc_updater_path)
+            if len(os.listdir()) > 1:
+                print("WARNING - The Minecraft updater is already downloaded")
+                print("Continuing could mean that your Minecraft world will be overwritten")
+                if questionary.text("Confirm by writing 'DELETE", ).ask() == "DELETE":
+                    rmtree(mc_updater_path)
+                else:
+                    print("Didn't update minecraft_updater")
+                
         Repo.clone_from(f"https://github.com/{minecraft_updater_repo}.git", mc_updater_path)
     else:
         print("Cannot get Minecraft updater, since download location is not defined")
@@ -80,5 +86,5 @@ def update_minecraft_server(cfg: Config):
         raise ValueError("Cannot update Minecraft server, since base path is not defined")
 
 def main(cfg: Config):
-    get_bedrock_bot(cfg)
+    get_console_bridge(cfg)
     update_minecraft_server(cfg)
