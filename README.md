@@ -1,48 +1,72 @@
 # Bedrock Server Manager
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)![Platform](https://img.shields.io/badge/platform-Ubuntu-orange)![GitHub last commit](https://img.shields.io/github/last-commit/Djayden-R/Bedrock-server-manager)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Ubuntu-orange)](https://ubuntu.com/)
+[![GitHub last commit](https://img.shields.io/github/last-commit/Djayden-R/Bedrock-server-manager)](https://github.com/Djayden-R/Bedrock-server-manager)
 
 An automated management tool for a bedrock server. It will handle updating, shutting down, making backups, handling a dynamic dns, and even connecting players on a console to the server.
 
-## How this works
-After it has been set up the program will check what mode it needs to run:
-- **NORMAL** - the mode that runs when the server should just start up
-- **DRIVE_BACKUP** - the mode that will start the backup to your online drive. It will take the latest symlink and upload it using Rclone
-- **INVALID** - this mode is triggered when the server is started at an invalid time (set by the user)
-- **UPDATE** - this mode is turned on when the Home Assistant switch for updating is turned on during boot
-- **CONFIGURATION** - run when the program is opened for the first time (based on if the config.yaml exists)
+## How it Works
+
+After setup, the program determines which mode to run based on configuration and timing:
+
+- **NORMAL** - Standard operating mode that starts the server with automatic shutdown after inactivity
+- **DRIVE_BACKUP** - Initiates backup to online drive using the latest symlink via Rclone  
+- **INVALID** - Triggered when server starts outside configured valid hours
+- **UPDATE** - Activated when Home Assistant update switch is enabled during boot
+- **CONFIGURATION** - First-time setup mode when no config.yaml exists
 
 ## Prerequisites
-This program has only been tested on Ubuntu. It is therefore recommended you use Ubuntu for this program, and if you want to use drive backups, you will need to setup Rclone (tutorial is not provided).
 
-## How to run
-### 1. First time setup
+> **Note:** This program has been tested exclusively on Ubuntu. Ubuntu is the recommended platform. For drive backup functionality, Rclone must be configured separately.
+
+## Installation
+
+### Initial Setup
+
 ```bash
 git clone https://github.com/Djayden-R/Bedrock-server-manager.git
 cd Bedrock-server-manager
 chmod +x setup.sh
 ./setup.sh
 ```
-This will run the setup process and will ask you all the questions needed for setting up the program
 
-### 2. Normal operation
+The setup script will guide you through the configuration process.
+
+### Running the Server
+
 ```bash
-./venv/bin/bedrock-server-manager
+./Bedrock-server-manager/venv/bin/bedrock-server-manager
 ```
-Since the program is installed inside a virtual environment you will need to run the program like this
 
-## Configuration
-- **Home Assistant Integration** - IP, token, and entity switches for turning on auto shutdown and updates
-- **Backup Settings** - Local, external drive, and cloud backup locations (using Rclone)
-- **Server Timing** - Valid operating hours and shutdown timeouts
-- **Dynamic DNS** - DynuDNS integration for one fixed server address
+**Optional:** Create a shell alias for easier access:
 
-## Extra Step
-I recommend setting up a .service file that automatically starts the program, this way the server only has to be turned on to just work. For turning on the server I use a Discord bot that runs on Home Assistant and sends a WoL signal to the server.
+```bash
+# Add to ~/.bashrc
+echo 'alias bsm="$HOME/Bedrock-server-manager/venv/bin/bedrock-server-manager"' >> ~/.bashrc
+source ~/.bashrc
+```
 
-## Credit
-Thanks to these two projects for making this program possible
-- Uses [Broadcaster](https://github.com/MCXboxBroadcast/Broadcaster) (GPL-3.0 License) (referred to as console bridge)
-- Uses [Minecraft-Bedrock-Server-Updater](https://github.com/ghwns9652/Minecraft-Bedrock-Server-Updater) (MIT License) (referred to as minecraft updater)
+## Features
 
-## What was done by AI?
-Ai was used in the making of this project, but only on the pyproject.toml, for load_config.py and for some general research.
+- **Home Assistant Integration** - Remote control via IP, token, and entity switches for auto shutdown and updates
+- **Backup Management** - Multiple backup strategies including local, external drive, and cloud storage using Rclone  
+- **Intelligent Scheduling** - Configurable operating hours and automatic shutdown timeouts
+- **Dynamic DNS** - DynuDNS integration for consistent server addressing
+
+## Production Deployment
+
+For automated server management, consider setting up a systemd service file. This enables the server to start automatically on boot.
+
+**Additional Setup:** The author uses a Discord bot running on Home Assistant to send Wake-on-LAN signals for remote server startup.
+
+## Acknowledgments
+
+This project integrates the following open-source tools:
+
+- **[Broadcaster](https://github.com/MCXboxBroadcast/Broadcaster)** (GPL-3.0 License) - Console bridge functionality
+- **[Minecraft-Bedrock-Server-Updater](https://github.com/ghwns9652/Minecraft-Bedrock-Server-Updater)** (MIT License) - Server update automation
+
+## Development Notes
+
+AI assistance was utilized for specific components: `pyproject.toml` configuration, `load_config.py` implementation, and formatting of the README.md.
