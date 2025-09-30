@@ -26,14 +26,12 @@ def hour_valid(hour):
 
 def get_mode():
     #check if new user
-    config_file = Path("msm/config/config.yaml").absolute()
-    if not config_file.exists():
-        print(f"[{datetime.now()}] no config found, running set-up process")
-        return Mode.CONFIGURATION
-    else:
+    try:
         global cfg 
         cfg = Config.load()
-
+    except FileNotFoundError:
+        return Mode.CONFIGURATION
+    
     time = datetime.now()
     hour = time.hour
     print(f"[{datetime.now()}] current hour: {hour}")
