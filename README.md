@@ -37,15 +37,7 @@ The setup script will guide you through the configuration process.
 ```bash
 ./Bedrock-server-manager/venv/bin/bedrock-server-manager
 ```
-
-**Optional:** Create a shell alias for easier access:
-
-```bash
-# Add to ~/.bashrc
-echo 'alias bsm="$HOME/Bedrock-server-manager/venv/bin/bedrock-server-manager"' >> ~/.bashrc
-source ~/.bashrc
-```
-Now you can just run the program using bsm
+or after adding the alias
 ```bash
 bsm
 ```

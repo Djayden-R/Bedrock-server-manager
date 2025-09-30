@@ -7,6 +7,7 @@ import yaml
 import socket
 from msm.config.load_config import Config
 import msm.core.minecraft_updater
+import subprocess
 
 #setup file for new users
 def linux_check():
@@ -152,6 +153,9 @@ def get_minecraft_ip():
     s.close()
     return ip
 
+def add_alias():
+    subprocess.run(['bash', '-c', 'echo \'alias bsm="$HOME/Bedrock-server-manager/venv/bin/bedrock-server-manager"\' >> ~/.bashrc'])
+
 def main():
     print("Hi, there!")
     print("This is a program for fully managing your bedrock server")
@@ -242,6 +246,10 @@ def main():
         msm.core.minecraft_updater.get_console_bridge(cfg)
     msm.core.minecraft_updater.get_minecraft_updater(cfg)
     msm.core.minecraft_updater.update_minecraft_server(cfg)
+    print("An alias makes it possible to run this program by just typing 'bsm' into the terminal")
+    if not questionary.confirm("Have you added an alias for this program before").ask():
+        if questionary.confirm("Would you like to add an alias").ask():
+            add_alias()
     print("To make this code work, first reboot this computer and then run 'bsm'")
     print("If you want the code to run on boot, follow the tutorial inside the README.md")
 
