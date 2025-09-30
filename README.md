@@ -46,6 +46,10 @@ The setup script will guide you through the configuration process.
 echo 'alias bsm="$HOME/Bedrock-server-manager/venv/bin/bedrock-server-manager"' >> ~/.bashrc
 source ~/.bashrc
 ```
+Now you can just run the program using bsm
+```bash
+bsm
+```
 
 ## Features
 
@@ -69,4 +73,4 @@ This project integrates the following open-source tools:
 
 ## Development Notes
 
-AI assistance was utilized for specific components: `pyproject.toml` configuration, `load_config.py` implementation, and formatting of the README.md.
+AI assistance was utilized for specific components: `pyproject.toml` configuration, `load_config.py` implementation, and formatting of the `README.md`.
