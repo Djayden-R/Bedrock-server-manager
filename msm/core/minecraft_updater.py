@@ -45,11 +45,12 @@ def get_latest_release(repo_name, download_location, filename=None):
 
 def get_console_bridge(cfg: Config):
     if cfg.path_base:
-        console_bridge_path = os.path.join(cfg.path_base, "console_bridge", "MCXboxBroadcastStandalone.jar")
-        if os.path.exists(console_bridge_path):
-            os.remove(console_bridge_path)
+        console_bridge_folder = os.path.join(cfg.path_base, "console_bridge")
+        console_bridge_file = os.path.join(console_bridge_folder, "MCXboxBroadcastStandalone.jar")
+        if os.path.exists(console_bridge_file):
+            os.remove(console_bridge_file)
 
-        get_latest_release(console_bridge_repo, console_bridge_path, filename="MCXboxBroadcastStandalone.jar")
+        get_latest_release(console_bridge_repo, console_bridge_folder, filename="MCXboxBroadcastStandalone.jar")
     else:
         print("Cannot get console bridge, since base path is not defined")
 
