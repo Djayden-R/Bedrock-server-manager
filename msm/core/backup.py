@@ -64,7 +64,7 @@ def update_sym_link(cfg: Config, backup_path):
     if os.path.islink(symlink):
         os.unlink(symlink)
     
-    #save latest backup to a symlink, so it can be accessed later for the Google Drive backup
+    #save latest backup to a symlink, so it can be accessed later for the drive backup
     os.symlink(backup_path, symlink)
     print(f"Symlink: '{symlink}' points to '{backup_path}'")
 

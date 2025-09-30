@@ -13,7 +13,7 @@ import os
 
 class Mode(Enum):
     NORMAL = "normal" #normal operating mode, shutdown after 3 minutes with local backup and hdd backup
-    DRIVE_BACKUP = "drive backup" #just backup to google drive, then shutdown
+    DRIVE_BACKUP = "drive backup" #just backup to drive, then shutdown
     INVALID = "invalid time" #boot up at an invalid time, just shutdown
     CONFIGURATION = "config" #go through set-up process
 
@@ -73,7 +73,7 @@ def normal_operation():
 
 
 def drive_backup():
-    print(f"[{datetime.now()}] only backing up to Google Drive")
+    print(f"[{datetime.now()}] only backing up to drive")
     backup.main(cfg, type="drive")
     print(f"[{datetime.now()}] shutting down...")
     shutdown()
