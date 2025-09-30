@@ -2,12 +2,15 @@ from msm.services.ddns_update import update_DNS
 from msm.services.server_status import start_checking_playercount
 from msm.services.check_ha_switch import entity_status
 from msm.config.load_config import Config
+from msm.core.minecraft_updater import update_minecraft_server
 import msm.core.backup as backup
 from msm.core.minecraft_updater import get_bedrock_bot, update_minecraft_server
 import sys
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
+import subprocess
+import os
 
 class Mode(Enum):
     NORMAL = "normal" #normal operating mode, shutdown after 3 minutes with local backup and hdd backup
@@ -46,8 +49,18 @@ def get_mode():
     else:
         return Mode.INVALID
 
+def start_server(cfg: Config):
+    if cfg.path_base:
+        mc_updater_path = os.path.join(cfg.path_base, "minecraft_updater")
+        subprocess.run(['bash', mc_updater_path+'/updater/startserver.sh', mc_updater_path])
+    else:
+        raise ValueError("Base path is not defined")
+
 def normal_shutdown():
     update_DNS(cfg)
+    if not update_minecraft_server(cfg): #if server wasn't updated, start the server manually
+        start_server(cfg)
+    
     while True:
         if start_checking_playercount(cfg):
             if entity_status(cfg, cfg.ha_shutdown_entity):
