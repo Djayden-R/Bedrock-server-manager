@@ -243,6 +243,7 @@ def main():
         print("Great, downloading now")
         msm.core.minecraft_updater.get_bedrock_bot(cfg)
     msm.core.minecraft_updater.get_minecraft_updater(cfg)
+    msm.core.minecraft_updater.update_minecraft_server(cfg)
 
 if __name__ == "__main__":
     main()
