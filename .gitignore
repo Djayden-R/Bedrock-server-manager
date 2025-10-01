@@ -6,4 +6,4 @@ config.yaml
 *.egg-info
 requirements.txt
 TODO.md
-*test.py
+tests*
