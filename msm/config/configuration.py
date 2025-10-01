@@ -8,6 +8,7 @@ import socket
 from msm.config.load_config import Config
 import msm.core.minecraft_updater
 import subprocess
+import ipaddress
 
 #setup file for new users
 def linux_check():
@@ -17,6 +18,13 @@ def linux_check():
 
 def clear_console():
     os.system('cls' if os.name == 'nt' else 'clear')
+
+def ip_is_local(ip):
+    try:
+        ip = ipaddress.IPv4Address(ip)
+        return ip.is_private
+    except Exception:
+        return False
 
 def password_confirm():
     dynu_password = questionary.password("What is your ddns password?").ask()
@@ -222,12 +230,22 @@ def main():
 
 
     clear_console()
+        
+    #automatically get the users ip and confirm if it's right
     mc_ip = get_minecraft_ip()
+    if not questionary.confirm(f"Is this your local ip: {mc_ip}").ask():
+        mc_ip = questionary.text("Please add your local ip:",
+                 default= "192.168.1.1",
+                 validate=lambda val: ip_is_local(val) or "make sure ip is valid").ask()
+
+    #ask for the minecraft port
     mc_port = int(questionary.text("Enter the Minecraft server port:", default="19132", validate=lambda x: x.isdigit()).ask())
+    
+    #save the minecraft data
     config_data["mc"] = {"ip": mc_ip, "port": mc_port}
     clear_console()
 
-
+    #save the file and warn the user if it contains sensitive information
     with open('msm/config/config.yaml', 'w') as f:
         yaml.dump(config_data, f, default_flow_style=False, indent=2)
         print("Config file saved to msm/config/config.yaml")
@@ -239,17 +257,26 @@ def main():
     cfg = Config.load()
 
     #ask permission to download the repositories
-    print("This program can uses MCXboxBroadcast/Broadcaster to make it possible for console players to join the server")
-    print("This is optional")
+    print("This program can uses MCXboxBroadcast/Broadcaster to make it possible for console players to join the server, this is optional")
+    
+    #install and configure the console bridge
     if questionary.confirm("Do you want to download this program?").ask():
         print("Great, downloading now")
         msm.core.minecraft_updater.get_console_bridge(cfg)
+        msm.core.minecraft_updater.authenticate_console_bridge(cfg)
+        questionary.press_any_key_to_continue("Press any key if you understand the instructions")
+    
+    #install the minecraft updater and run it to also install the minecraft server
     msm.core.minecraft_updater.get_minecraft_updater(cfg)
     msm.core.minecraft_updater.update_minecraft_server(cfg)
+
+    #ask if the user wants an alias and add it if they do
     print("An alias makes it possible to run this program by just typing 'bsm' into the terminal")
     if not questionary.confirm("Have you added an alias for this program before").ask():
         if questionary.confirm("Would you like to add an alias").ask():
             add_alias()
+    
+    #give instructions for running the program
     print("To make this code work, first reboot this computer and then run 'bsm'")
     print("If you want the code to run on boot, follow the tutorial inside the README.md")
 
