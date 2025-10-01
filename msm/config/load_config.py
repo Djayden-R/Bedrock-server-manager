@@ -2,6 +2,7 @@ import yaml
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Optional, List
+import os
 
 @dataclass(frozen=True)
 class Config:
@@ -35,11 +36,14 @@ class Config:
     path_base: Optional[str] = None
 
     @classmethod
-    def load(cls, path: Path = Path("msm/config/config.yaml").resolve()) -> "Config":
-        if not path.exists():
-            raise FileNotFoundError(f"Config file not found: {path}")
+    def load(cls) -> "Config":
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        config_location = Path(os.path.join(dir_path, "config.yaml"))
+
+        if not config_location.exists():
+            raise FileNotFoundError(f"Config file not found: {config_location}")
         
-        data = yaml.safe_load(path.read_text())
+        data = yaml.safe_load(config_location.read_text())
         
         # Flatten nested structure
         flat_data = {}
