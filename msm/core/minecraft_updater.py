@@ -59,7 +59,7 @@ def get_console_bridge(cfg: Config):
 
 def authenticate_console_bridge(cfg: Config):
     if cfg.path_base:
-        console_bridge_path = os.path.join(cfg.path_base, "msm/console_bridge/MCXboxBroadcastStandalone.jar")
+        console_bridge_path = os.path.join(cfg.path_base, "console_bridge/MCXboxBroadcastStandalone.jar")
         if os.path.exists(console_bridge_path):
             process = subprocess.Popen(["java", "-jar", console_bridge_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
             auth_code = None
