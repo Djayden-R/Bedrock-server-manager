@@ -9,6 +9,9 @@ import questionary
 console_bridge_repo = "MCXboxBroadcast/Broadcaster"
 minecraft_updater_repo = "ghwns9652/Minecraft-Bedrock-Server-Updater"
 
+def clear_console():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 def download(url, file_path):
         r = requests.get(url, stream=True)
 
@@ -53,6 +56,30 @@ def get_console_bridge(cfg: Config):
         get_latest_release(console_bridge_repo, console_bridge_folder, filename="MCXboxBroadcastStandalone.jar")
     else:
         print("Cannot get console bridge, since base path is not defined")
+
+def authenticate_console_bridge(cfg: Config):
+    if cfg.path_base:
+        console_bridge_path = os.path.join(cfg.path_base, "msm/console_bridge/MCXboxBroadcastStandalone.jar")
+        if os.path.exists(console_bridge_path):
+            process = subprocess.Popen(["java", "-jar", console_bridge_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+            auth_code = None
+            if process.stdout:
+                for line in process.stdout:
+                    if "enter the code" in line:
+                        cleaned_auth_line = line.split("enter the code ")[1]
+                        auth_code = cleaned_auth_line.split()[0]
+                        print("Now you need to go to microsoft.com/link")
+                        print(f"Then enter this code: {auth_code}")
+                    elif "Successfully authenticated as" in line:
+                        console_bridge_path = os.path.join(cfg.path_base, "msm/console_bridge")
+                        clear_console()
+                        print("Great the console bridge is now authenticated")
+                        print("Only one thing, you will need to edit the config file of the bot yourself")
+                        print(f"You will need to go to {console_bridge_path}")
+                        print("And then you will need to 'sudo nano config.yml'")
+                        print("There under session-info you will need to enter a name, ip and port")
+    else:
+        raise ValueError("Cannot authenticate console bridge, since base path is not defined")
 
 def get_minecraft_updater(cfg: Config):
     if cfg.path_base:
