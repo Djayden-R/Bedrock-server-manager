@@ -7,41 +7,35 @@ from msm.core.minecraft_updater import get_console_bridge, update_minecraft_serv
 import sys
 from datetime import datetime
 from enum import Enum
-from pathlib import Path
 import subprocess
 import os
 
 class Mode(Enum):
     NORMAL = "normal" #normal operating mode, shutdown after 3 minutes with local backup and hdd backup
-    DRIVE_BACKUP = "drive backup" #just backup to google drive, then shutdown
+    DRIVE_BACKUP = "drive backup" #just backup to drive, then shutdown
     INVALID = "invalid time" #boot up at an invalid time, just shutdown
-    UPDATE = "update" #update the server
     CONFIGURATION = "config" #go through set-up process
 
 def shutdown():
-	with open("/tmp/mc_ready","w") as f:
-		f.write("done")
+    print("Shutting down in 10 seconds")
+    print("ctrl + c to cancel")
+    subprocess.run("sudo shutdown now")
 
 def hour_valid(hour):
     return cfg.timing_begin_valid < hour < cfg.timing_end_valid
 
 def get_mode():
     #check if new user
-    config_file = Path("msm/config/config.yaml").absolute()
-    if not config_file.exists():
-        print(f"[{datetime.now()}] no config found, running set-up process")
-        return Mode.CONFIGURATION
-    else:
+    try:
         global cfg 
         cfg = Config.load()
-
+    except FileNotFoundError:
+        return Mode.CONFIGURATION
+    
     time = datetime.now()
     hour = time.hour
     print(f"[{datetime.now()}] current hour: {hour}")
     if not (cfg.timing_begin_valid and cfg.timing_end_valid) or hour_valid(hour):
-        if entity_status(cfg, cfg.ha_update_entity):
-            return Mode.UPDATE
-        else:
             return Mode.NORMAL
     elif hour == cfg.timing_drive_backup:
         return Mode.DRIVE_BACKUP
@@ -55,13 +49,14 @@ def start_server(cfg: Config):
     else:
         raise ValueError("Base path is not defined")
 
-def normal_shutdown():
+def normal_operation():
     update_DNS(cfg)
-    if not update_minecraft_server(cfg): #if server wasn't updated, start the server manually
+    if update_minecraft_server(cfg): #if server needed an update, also update the console bridge
+        get_console_bridge(cfg)
+        shutdown()
+    else: #if server wasn't updated, start the server manually
         start_server(cfg)
-    else:
-        get_console_bridge(cfg) #if server needed an update, also update the console bridge
-    
+        
     while True:
         if start_checking_playercount(cfg):
             if entity_status(cfg, cfg.ha_shutdown_entity):
@@ -77,7 +72,7 @@ def normal_shutdown():
 
 
 def drive_backup():
-    print(f"[{datetime.now()}] only backing up to Google Drive")
+    print(f"[{datetime.now()}] only backing up to drive")
     backup.main(cfg, type="drive")
     print(f"[{datetime.now()}] shutting down...")
     shutdown()
@@ -91,9 +86,7 @@ def main():
     print(f"[{datetime.now()}] current mode: {mode.value}")
 
     if mode == Mode.NORMAL:
-        normal_shutdown()
-    elif mode == Mode.UPDATE:
-        update_server()
+        normal_operation()
     elif mode == Mode.DRIVE_BACKUP:
         drive_backup()
     elif mode == Mode.INVALID:

@@ -45,11 +45,12 @@ def get_latest_release(repo_name, download_location, filename=None):
 
 def get_console_bridge(cfg: Config):
     if cfg.path_base:
-        console_bridge_path = os.path.join(cfg.path_base, "console_bridge", "MCXboxBroadcastStandalone.jar")
-        if os.path.exists(console_bridge_path):
-            os.remove(console_bridge_path)
+        console_bridge_folder = os.path.join(cfg.path_base, "console_bridge")
+        console_bridge_file = os.path.join(console_bridge_folder, "MCXboxBroadcastStandalone.jar")
+        if os.path.exists(console_bridge_file):
+            os.remove(console_bridge_file)
 
-        get_latest_release(console_bridge_repo, console_bridge_path, filename="MCXboxBroadcastStandalone.jar")
+        get_latest_release(console_bridge_repo, console_bridge_folder, filename="MCXboxBroadcastStandalone.jar")
     else:
         print("Cannot get console bridge, since base path is not defined")
 
@@ -57,15 +58,18 @@ def get_minecraft_updater(cfg: Config):
     if cfg.path_base:
         mc_updater_path = os.path.join(cfg.path_base, "minecraft_updater")
         if os.path.exists(mc_updater_path):
-            if len(os.listdir()) > 1:
+            if len(os.listdir(mc_updater_path)) > 1:
+                print(os.listdir(mc_updater_path))
                 print("WARNING - The Minecraft updater is already downloaded")
                 print("Continuing could mean that your Minecraft world will be overwritten")
-                if questionary.text("Confirm by writing 'DELETE", ).ask() == "DELETE":
+                if questionary.text("Confirm by writing 'DELETE':", ).ask() == "DELETE":
                     rmtree(mc_updater_path)
                 else:
                     print("Didn't update minecraft_updater")
+            else:
+                rmtree(mc_updater_path)
                 
-        Repo.clone_from(f"https://github.com/{minecraft_updater_repo}.git", mc_updater_path)
+        Repo.clone_from(f"https://github.com/{minecraft_updater_repo}.git", mc_updater_path, )
     else:
         print("Cannot get Minecraft updater, since download location is not defined")
 
@@ -73,15 +77,15 @@ def update_minecraft_server(cfg: Config):
     if cfg.path_base:
         mc_updater_path = os.path.join(cfg.path_base, "minecraft_updater")
         minecraft_updater_path = os.path.expanduser(f"{mc_updater_path}/updater/mcserver_autoupdater.py")
-        minecraft_updater_output = str(subprocess.run(['python3', minecraft_updater_path], shell=True))
-        if "minecraft server is already newest version" in minecraft_updater_output:
+        minecraft_updater_output = subprocess.run(['python3', minecraft_updater_path], capture_output=True, text=True)
+        if "minecraft server is already newest version" in minecraft_updater_output.stdout:
             print("Nothing to update, starting server")
-            return True
-        elif "minecraft server is updated" in minecraft_updater_output:
-            print("Minecrat server successfully updated and started")
             return False
+        elif "minecraft server is updated" in minecraft_updater_output.stdout:
+            print("Minecraft server successfully updated and started")
+            return True
         else:
-            raise ValueError(f"Unknown state: {minecraft_updater_output}")
+            raise ValueError(f"Unknown state: {minecraft_updater_output.stdout} \nerror: {minecraft_updater_output.stderr}")
     else:
         raise ValueError("Cannot update Minecraft server, since base path is not defined")
 

@@ -7,6 +7,7 @@ import yaml
 import socket
 from msm.config.load_config import Config
 import msm.core.minecraft_updater
+import subprocess
 
 #setup file for new users
 def linux_check():
@@ -55,17 +56,15 @@ def home_assistant_setup():
     print("But in order to use Home Assistant we will need its ip and token")
     home_assistant_ip = questionary.text("What is you Home Assistant address?", validate=lambda val: val.startswith("http://") or val.startswith("https://") or "Must start with http:// or https://", default="http://").ask()
     print("Getting your token is fairly easy")
-    print("Go to your profile in the bottom-left corner, then to the security tab.\nAt the bottom you will see longlive accesstoken, create one, name it something like Bedrock server manager")
+    print("Go to your profile in the bottom-left corner, then to the security tab.\nAt the bottom you will see long lived access token, create one, name it something like Bedrock server manager")
     print("Then paste the token bellow")
     home_assistant_token = questionary.password("Home Assistant token:").ask()
     clear_console()
-    print("Now we have to set up two switches")
+    print("Now we have to set up a switch")
     print("First make a switch for turning on and off auto shutdown (useful for debugging)")
     print("Go to settings > devices and services > helpers > add (switch)")
     auto_shutdown_entity = questionary.text("Name of switch: ", validate=lambda val: val.startswith("input_boolean.") or "helper must be a switch", default="input_boolean.").ask()
-    print("Now add one for requesting an update for the server")
-    update_entity = questionary.text("Name of switch: ", validate=lambda val: val.startswith("input_boolean.") or "helper must be a switch", default="input_boolean.").ask()
-    return home_assistant_ip, home_assistant_token, auto_shutdown_entity, update_entity
+    return home_assistant_ip, home_assistant_token, auto_shutdown_entity
 
 def shutdown_mode_setup(drive_enabled):
     clear_console()
@@ -90,7 +89,7 @@ def shutdown_mode_setup(drive_enabled):
     
     if drive_enabled:
         drive_backup_time = int(questionary.text(
-            "At what time do you want the server to createa Google Drive backup?",
+            "At what time do you want the server to create drive backup?",
                 validate=lambda val: val.isdigit() and 0 <= int(val.removeprefix("0")) < 24 or "Enter a valid time in HH format",
                 default="3"
                 ).ask().removeprefix("0"))
@@ -111,8 +110,8 @@ def automatic_backups_setup(default_path):
 
     if local_backup:
         local_path = questionary.path(
-            "Where do you want to save the local backups?",
-            default=os.path.join(default_path, "backups"),
+            "Where do you want to save the local backups?\nIt is not recommended to choose the main folder for this project, since the backups could then contain previous backups",
+            default=os.path.join(default_path.removesuffix("Bedrock-server-manager"), "backups"),
             only_directories=True
         ).ask()
     else:
@@ -154,6 +153,9 @@ def get_minecraft_ip():
     s.close()
     return ip
 
+def add_alias():
+    subprocess.run(['bash', '-c', 'echo \'alias bsm="$HOME/Bedrock-server-manager/venv/bin/bedrock-server-manager"\' >> ~/.bashrc'])
+
 def main():
     print("Hi, there!")
     print("This is a program for fully managing your bedrock server")
@@ -178,7 +180,7 @@ def main():
 
 
     """ 
-    DISABELED SERVICE SELECTION
+    DISABLED SERVICE SELECTION
     Don't have time to make services optional yet
     This will be implemented in the future
     """
@@ -196,8 +198,8 @@ def main():
     home_assistant = dynu = auto_backup = auto_shutdown = True
 
     if home_assistant:
-        ha_ip, ha_token, auto_shutdown_entity, update_entity = home_assistant_setup()
-        config_data["ha"] = {"ip": ha_ip, "token": ha_token, "shutdown_entity": auto_shutdown_entity, "update_entity": update_entity}
+        ha_ip, ha_token, auto_shutdown_entity = home_assistant_setup()
+        config_data["ha"] = {"ip": ha_ip, "token": ha_token, "shutdown_entity": auto_shutdown_entity}
 
     if dynu:
         dynu_password, dynu_domain = dynu_setup()
@@ -244,6 +246,12 @@ def main():
         msm.core.minecraft_updater.get_console_bridge(cfg)
     msm.core.minecraft_updater.get_minecraft_updater(cfg)
     msm.core.minecraft_updater.update_minecraft_server(cfg)
+    print("An alias makes it possible to run this program by just typing 'bsm' into the terminal")
+    if not questionary.confirm("Have you added an alias for this program before").ask():
+        if questionary.confirm("Would you like to add an alias").ask():
+            add_alias()
+    print("To make this code work, first reboot this computer and then run 'bsm'")
+    print("If you want the code to run on boot, follow the tutorial inside the README.md")
 
 if __name__ == "__main__":
     main()
