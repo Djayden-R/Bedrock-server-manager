@@ -78,6 +78,11 @@ def authenticate_console_bridge(cfg: Config):
                         print(f"You will need to go to {console_bridge_path}")
                         print("And then you will need to 'sudo nano config.yml'")
                         print("There under session-info you will need to enter a name, ip and port")
+            else:
+                print("There is no output from the console bridge")
+        else:
+            print("Console bridge is not found")
+            print(f"Checked this path: {console_bridge_path}")
     else:
         raise ValueError("Cannot authenticate console bridge, since base path is not defined")
 
