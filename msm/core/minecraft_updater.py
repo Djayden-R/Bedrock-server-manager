@@ -78,6 +78,7 @@ def authenticate_console_bridge(cfg: Config):
                         print(f"You will need to go to {console_bridge_path}")
                         print("And then you will need to 'sudo nano config.yml'")
                         print("There under session-info you will need to enter a name, ip and port")
+                        break
             else:
                 print("There is no output from the console bridge")
         else:
