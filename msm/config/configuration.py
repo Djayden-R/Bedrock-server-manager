@@ -85,11 +85,11 @@ def shutdown_mode_setup(drive_enabled):
         if questionary.confirm("It is also possible to enable certain timeframes where the server will not startup.\nWould you like to enable that?").ask():
             begin_valid_time = int(questionary.text(
                 "Enter the start time in 24h format HH",
-                validate=lambda val: val.isdigit() and 0 <= int(val.removeprefix("0")) < 24 or "Enter a valid time in HH format"
+                validate=lambda val: val.isdigit() and 0 <= int(val.removeprefix("0") if len(val) > 1 else val) < 24 or "Enter a valid time in HH format"
             ).ask().removeprefix("0"))
             end_valid_time = int(questionary.text(
                 "Enter the end time in 24h format (HH)",
-                validate=lambda val: val.isdigit() and 0 <= int(val.removeprefix("0")) < 24 or "Enter a valid time in HH format"
+                validate=lambda val: val.isdigit() and 0 <= int(val.removeprefix("0") if len(val) > 1 else val) < 24 or "Enter a valid time in HH format"
             ).ask().removeprefix("0"))
         begin_valid_time = end_valid_time = None
     else:
