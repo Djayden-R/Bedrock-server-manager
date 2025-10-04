@@ -1,5 +1,5 @@
 from msm.services.ddns_update import update_DNS
-from msm.services.server_status import start_checking_playercount
+from msm.services.server_status import check_playercount
 from msm.services.check_ha_switch import entity_status
 from msm.config.load_config import Config
 import msm.core.backup as backup
@@ -19,7 +19,7 @@ class Mode(Enum):
 def shutdown():
     print("Shutting down in 10 seconds")
     print("ctrl + c to cancel")
-    subprocess.run("sudo shutdown now")
+    subprocess.run(["sudo", "shutdown", "now"])
 
 def hour_valid(hour: int) -> bool:
     if cfg.timing_begin_valid and cfg.timing_end_valid:
@@ -53,25 +53,29 @@ def start_server(cfg: Config):
         raise ValueError("Base path is not defined")
 
 def normal_operation():
-    update_DNS(cfg)
+    if cfg.dynu_domain and cfg.dynu_pass:
+        update_DNS(cfg)
+    
     if update_minecraft_server(cfg): #if server needed an update, also update the console bridge
         get_console_bridge(cfg)
         shutdown()
     else: #if server wasn't updated, start the server manually
         start_server(cfg)
-        
-    while True:
-        if start_checking_playercount(cfg):
-            if entity_status(cfg, cfg.ha_shutdown_entity): #type: ignore
-                print(f"[{datetime.now()}] starting backup script")
-                backup.main(cfg, type="quick")
-                print(f"[{datetime.now()}] shutting down...")
-                shutdown()
-                sys.exit(42)
-        else:
-            if entity_status(cfg, cfg.ha_shutdown_entity): #type: ignore
-                print(f"[{datetime.now()}] no one online, but server was not used, so backup is not needed")
-                shutdown()
+    
+    needs_backup = check_playercount(cfg)
+    if needs_backup == True: #server needs backup
+        if entity_status(cfg, cfg.ha_shutdown_entity): #type: ignore
+            print(f"[{datetime.now()}] starting backup script")
+            backup.main(cfg, type="quick")
+            print(f"[{datetime.now()}] shutting down...")
+            shutdown()
+            sys.exit(42)
+    elif needs_backup == False: #server doesn't need backup
+        if entity_status(cfg, cfg.ha_shutdown_entity): #type: ignore
+            print(f"[{datetime.now()}] no one online, but server was not used, so backup is not needed")
+            shutdown()
+    elif needs_backup is None: #error occured
+        return
 
 
 def drive_backup():
