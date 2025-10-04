@@ -22,10 +22,10 @@ class Config:
     mc_port: Optional[int] = None
     
     # Backup settings
-    backup_local_path: Optional[Path] = None
-    backup_hdd_path: Optional[Path] = None
+    backup_local_path: Optional[str] = None
+    backup_hdd_path: Optional[str] = None
     backup_drive_name: Optional[str] = None
-    backup_directories: Optional[List[Path]] = None
+    backup_directories: Optional[List[str]] = None
     
     # Timing
     timing_begin_valid: Optional[int] = None
