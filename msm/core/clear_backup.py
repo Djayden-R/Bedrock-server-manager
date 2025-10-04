@@ -152,5 +152,11 @@ def check_and_clear(location, min_free_gb, name):
         print(f"More than {min_free_gb} GB left on {name}, no need to clear backups.")
 
 def main(cfg: Config):
-    check_and_clear(cfg.backup_local_path, 30, "Local Backup")
-    check_and_clear(cfg.backup_hdd_path, 50, "HDD Backup")
+    if cfg.backup_local_path:
+        check_and_clear(cfg.backup_local_path, 30, "Local Backup")
+    else:
+        print("Not checking local backup folder, since it doesn't exist")
+    if cfg.backup_hdd_path:
+        check_and_clear(cfg.backup_hdd_path, 50, "HDD Backup")
+    else:
+        print("Not checking hdd backup folder, since it doesn't exist")
