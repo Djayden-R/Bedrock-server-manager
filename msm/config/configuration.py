@@ -177,24 +177,14 @@ def main():
     
     questionary.press_any_key_to_continue("I am going to ask you a few questions to set everything up.").ask()
 
-
-    """ 
-    DISABLED SERVICE SELECTION
-    Don't have time to make services optional yet
-    This will be implemented in the future
-    """
-
-    # services = questionary.checkbox(
-    # "What services do you want to set up?", choices=["Home Assistant", "Dynu DNS", "Automatic shutdown", "Automatic backups"]).ask()
+    services = questionary.checkbox(
+    "What services do you want to set up?", choices=["Home Assistant", "Dynu DNS", "Automatic shutdown", "Automatic backups"]).ask()
 
 
-    # home_assistant = "Home Assistant" in services
-    # dynu = "Dynu DNS" in services
-    # auto_shutdown = "Automatic shutdown" in services
-    # auto_backup = "Automatic backups" in services
-
-
-    home_assistant = dynu = auto_backup = auto_shutdown = True
+    home_assistant = "Home Assistant" in services
+    dynu = "Dynu DNS" in services
+    auto_shutdown = "Automatic shutdown" in services
+    auto_backup = "Automatic backups" in services
 
     if home_assistant:
         ha_ip, ha_token, auto_shutdown_entity = home_assistant_setup()
