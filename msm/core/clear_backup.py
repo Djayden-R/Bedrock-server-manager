@@ -156,10 +156,10 @@ def check_and_clear(location: Path, min_free_gb: int, name: str):
 
 def main(cfg: Config):
     if cfg.backup_local_path:
-        check_and_clear(cfg.backup_local_path, 30, "Local Backup")
+        check_and_clear(Path(cfg.backup_local_path), 30, "Local Backup")
     else:
         print("Not checking local backup folder, since it doesn't exist")
     if cfg.backup_hdd_path:
-        check_and_clear(cfg.backup_hdd_path, 50, "HDD Backup")
+        check_and_clear(Path(cfg.backup_hdd_path), 50, "HDD Backup")
     else:
         print("Not checking hdd backup folder, since it doesn't exist")

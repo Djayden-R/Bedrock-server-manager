@@ -24,6 +24,7 @@ def generate_zip(cfg: Config, backup_name: str) -> Optional[Path]:
     if cfg.backup_directories:
         with tempfile.TemporaryDirectory() as temp_dir:
             for directory in cfg.backup_directories:
+                directory = Path(directory)
                 #get name and new location of directory that is getting backed up
                 temp_dest = os.path.join(temp_dir, directory.name)
                 #copy directory to destination
