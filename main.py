@@ -77,8 +77,11 @@ def normal_operation():
             if entity_status(cfg, cfg.ha_shutdown_entity): #type: ignore
                 print(f"[{datetime.now()}] Shutting down Minecraft server...")
                 stop_server(cfg)
-                print(f"[{datetime.now()}] Starting backup script")
-                backup.main(cfg, type="quick")
+                if cfg.backup_directories:
+                    print(f"[{datetime.now()}] Starting backup script")
+                    backup.main(cfg, type="quick")
+                else:
+                    print(f"[{datetime.now()}] No backup directories, skipping backup")
                 print(f"[{datetime.now()}] Shutting down...")
                 shutdown()
         elif needs_backup == False: #server doesn't need backup
