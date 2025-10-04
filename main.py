@@ -21,8 +21,11 @@ def shutdown():
     print("ctrl + c to cancel")
     subprocess.run("sudo shutdown now")
 
-def hour_valid(hour):
-    return cfg.timing_begin_valid < hour < cfg.timing_end_valid
+def hour_valid(hour: int) -> bool:
+    if cfg.timing_begin_valid and cfg.timing_end_valid:
+        return cfg.timing_begin_valid < hour < cfg.timing_end_valid
+    else: 
+        return False
 
 def get_mode():
     #check if new user
@@ -59,14 +62,14 @@ def normal_operation():
         
     while True:
         if start_checking_playercount(cfg):
-            if entity_status(cfg, cfg.ha_shutdown_entity):
+            if entity_status(cfg, cfg.ha_shutdown_entity): #type: ignore
                 print(f"[{datetime.now()}] starting backup script")
                 backup.main(cfg, type="quick")
                 print(f"[{datetime.now()}] shutting down...")
                 shutdown()
                 sys.exit(42)
         else:
-            if entity_status(cfg, cfg.ha_shutdown_entity):
+            if entity_status(cfg, cfg.ha_shutdown_entity): #type: ignore
                 print(f"[{datetime.now()}] no one online, but server was not used, so backup is not needed")
                 shutdown()
 
