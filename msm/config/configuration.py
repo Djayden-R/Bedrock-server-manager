@@ -109,7 +109,8 @@ def automatic_backups_setup(default_path):
     clear_console()
     backup_options = questionary.checkbox(
         "There are different options for automatic backups, select the ones you want to use:",
-        choices=["Local backup", "Back up to external drive", "Drive backup"]
+        choices=["Local backup", "Back up to external drive", "Drive backup"],
+        validate=lambda var: True if "Local backup" in var else "Local backup is required"
     ).ask()
     
     local_backup = "Local backup" in backup_options
