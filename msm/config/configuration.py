@@ -99,7 +99,7 @@ def shutdown_mode_setup(drive_enabled: bool):
         drive_backup_time = None
     return shutdown_time, begin_valid_time, end_valid_time, drive_backup_time
 
-def automatic_backups_setup(default_path: Path) -> tuple[Path, Path | None, str | None, list[Path]]:
+def automatic_backups_setup(default_path: str) -> tuple[Path, Path | None, str | None, list[Path]]:
     clear_console()
     backup_options = questionary.checkbox(
         "There are different options for automatic backups, select the ones you want to use:",
@@ -110,18 +110,18 @@ def automatic_backups_setup(default_path: Path) -> tuple[Path, Path | None, str 
     hdd_backup = "Back up to external drive" in backup_options
     drive_backup = "Drive backup" in backup_options
 
-    local_path = Path(questionary.path(
+    local_path = questionary.path(
         "Where do you want to save the local backups?\n DO NOT select the main folder for this project, since backups will also contain previous backups",
         default=os.path.join(str(default_path).removesuffix("Bedrock-server-manager"), "backups"),
         only_directories=True
-    ).ask())
+    ).ask()
     
     if hdd_backup:
-        hdd_path = Path(questionary.path(
+        hdd_path = questionary.path(
             "Where do you want to save the external drive backups?",
             default="/mnt",
             only_directories=True
-        ).ask()) 
+        ).ask()
     else:
         hdd_path = None
     if drive_backup:
@@ -135,11 +135,11 @@ def automatic_backups_setup(default_path: Path) -> tuple[Path, Path | None, str 
 
     directories: list[Path] = []
     while True:
-        directory = Path(questionary.path(
+        directory = questionary.path(
             "Enter a directory to back up (or leave blank to finish):",
             only_directories=True,
             default=str(default_path)
-        ).ask())
+        ).ask()
         if not directory:
             break
         directories.append(directory)
@@ -166,7 +166,7 @@ def main():
     #gather all variables and save them to a dictionary
     config_data = {}
 
-    program_location = Path(os.path.realpath(__file__).removesuffix("\\msm\\config\\configuration.py").removesuffix("/msm/config/configuration.py"))
+    program_location = os.path.realpath(__file__).removesuffix("\\msm\\config\\configuration.py").removesuffix("/msm/config/configuration.py")
     if questionary.confirm(f"{program_location} \nAre you sure you want to use the above location for this program?").ask():
         print("Great, let's continue")
         config_data["path"] = {"base": program_location}
