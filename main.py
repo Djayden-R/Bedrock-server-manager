@@ -9,6 +9,7 @@ from datetime import datetime
 from enum import Enum
 import subprocess
 import os
+from time import sleep
 
 class Mode(Enum):
     NORMAL = "normal" #normal operating mode, shutdown after 3 minutes with local backup and hdd backup
@@ -37,7 +38,7 @@ def get_mode():
     
     time = datetime.now()
     hour = time.hour
-    print(f"[{datetime.now()}] current hour: {hour}")
+    print(f"[{datetime.now()}] Current hour: {hour}")
     if not (cfg.timing_begin_valid and cfg.timing_end_valid) or hour_valid(hour):
             return Mode.NORMAL
     elif hour == cfg.timing_drive_backup:
@@ -52,6 +53,14 @@ def start_server(cfg: Config):
     else:
         raise ValueError("Base path is not defined")
 
+def stop_server(cfg: Config):
+    if cfg.path_base:
+        mc_updater_path = os.path.join(cfg.path_base, "minecraft_updater")
+        subprocess.run(['bash', mc_updater_path+'/updater/stopserver.sh', mc_updater_path])
+        sleep(10)
+    else:
+        raise ValueError("Base path is not defined")
+
 def normal_operation():
     if cfg.dynu_domain and cfg.dynu_pass:
         update_DNS(cfg)
@@ -62,26 +71,34 @@ def normal_operation():
     else: #if server wasn't updated, start the server manually
         start_server(cfg)
     
-    needs_backup = check_playercount(cfg)
-    if needs_backup == True: #server needs backup
-        if entity_status(cfg, cfg.ha_shutdown_entity): #type: ignore
-            print(f"[{datetime.now()}] starting backup script")
-            backup.main(cfg, type="quick")
-            print(f"[{datetime.now()}] shutting down...")
-            shutdown()
-            sys.exit(42)
-    elif needs_backup == False: #server doesn't need backup
-        if entity_status(cfg, cfg.ha_shutdown_entity): #type: ignore
-            print(f"[{datetime.now()}] no one online, but server was not used, so backup is not needed")
-            shutdown()
-    elif needs_backup is None: #error occured
-        return
+    if cfg.timing_shutdown:
+        needs_backup = check_playercount(cfg)
+        if needs_backup == True: #server needs backup
+            if entity_status(cfg, cfg.ha_shutdown_entity): #type: ignore
+                print(f"[{datetime.now()}] Shutting down Minecraft server...")
+                stop_server(cfg)
+                print(f"[{datetime.now()}] Starting backup script")
+                backup.main(cfg, type="quick")
+                print(f"[{datetime.now()}] Shutting down...")
+                shutdown()
+        elif needs_backup == False: #server doesn't need backup
+            if entity_status(cfg, cfg.ha_shutdown_entity): #type: ignore
+                print(f"[{datetime.now()}] No one online, but server was not used, so backup is not needed")
+                print(f"[{datetime.now()}] Shutting down Minecraft server...")
+                stop_server(cfg)
+                print(f"[{datetime.now()}] Shutting down...")
+                shutdown()
+        elif needs_backup is None: #error occured
+            return
+    else:
+        print("WARNING - Auto shutdown is off, this is not reccomended, backups will not work")
+        
 
 
 def drive_backup():
-    print(f"[{datetime.now()}] only backing up to drive")
+    print(f"[{datetime.now()}] Only backing up to drive")
     backup.main(cfg, type="drive")
-    print(f"[{datetime.now()}] shutting down...")
+    print(f"[{datetime.now()}] Shutting down...")
     shutdown()
 
 def update_server():
@@ -90,14 +107,14 @@ def update_server():
 
 def main():
     mode = get_mode()
-    print(f"[{datetime.now()}] current mode: {mode.value}")
+    print(f"[{datetime.now()}] Current mode: {mode.value}")
 
     if mode == Mode.NORMAL:
         normal_operation()
     elif mode == Mode.DRIVE_BACKUP:
         drive_backup()
     elif mode == Mode.INVALID:
-        print(f"[{datetime.now()}] invalid time, shutting down")
+        print(f"[{datetime.now()}] Invalid time, shutting down")
         shutdown()
         sys.exit(1)
     elif mode == Mode.CONFIGURATION:
