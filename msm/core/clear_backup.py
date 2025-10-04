@@ -2,27 +2,29 @@ import os
 import psutil
 from datetime import datetime
 from msm.config.load_config import Config
+from pathlib import Path
+from typing import Iterable
 
-def get_backup_folders(location):
+def get_backup_folders(location: Path):
     """Gets every folder in the location and sorts them"""
-    backup_folders = sorted(
-        folder for folder in os.listdir(location) 
-        if os.path.isdir(os.path.join(location,folder))) 
+    backup_folders = sorted(folder for folder in os.listdir(location) if os.path.isdir(os.path.join(location,folder))) 
     return backup_folders
 
-def get_sorted_list(base_path, backup_folders):
+def get_sorted_list(base_path: Path, backup_folders: Iterable[str]) -> dict[str, list[Path]]:
     """
     Function wil return a dictionary with dates 
     and their the backups in a list eg. "24-03-2025":["backup1", "backup2"]
     """
-    backup_per_date = {}
+    backup_per_date: dict[str, list[Path]] = {}
     for folder in backup_folders:
-        folder_path = os.path.join(base_path, folder)
-        backups = os.listdir(folder_path)
-        backup_per_date.update({folder:backups})
+        folder_path = base_path / folder
+        if not folder_path.is_dir():
+            continue
+        backups = [Path(p.name) for p in sorted(folder_path.iterdir()) if p.is_file()]
+        backup_per_date[folder] = backups
     return backup_per_date
 
-def remove_oldest_backup(backup_dates, backup_per_date, base_path, freed_space):
+def remove_oldest_backup(backup_dates: Iterable[str], backup_per_date: dict[str,list[Path]], base_path: Path, freed_space: float):
     for date in backup_dates:
         if len(backup_per_date[date]) > 1:
             oldest_backup_date = date
@@ -43,15 +45,15 @@ def remove_oldest_backup(backup_dates, backup_per_date, base_path, freed_space):
 
     return freed_space
 
-def clear_old_backups(backup_per_date, required_free_space, base_path):
+def clear_old_backups(backup_per_date: dict[str,list[Path]], required_free_space: float, base_path: Path):
     """Function will remove old backups based on the folder name (the date) and name of the backup (the time). 
     The backup_per_date is a dictionary in this format: "24-03-2025":["backup1", "backup2"]"""
 
     all_dates = backup_per_date.keys()
 
-    last_7_days = []
-    last_30_days = []
-    old_backups = []
+    last_7_days: list[str] = []
+    last_30_days: list[str] = []
+    old_backups: list[str] = []
 
     amount_backups_last_7 = 0
     amount_backups_last_30 = 0
@@ -93,14 +95,15 @@ def clear_old_backups(backup_per_date, required_free_space, base_path):
         else:
             directory = None
         
-        freed_space = remove_oldest_backup(directory, backup_per_date, base_path, freed_space)
+        if directory is not None:
+            freed_space = remove_oldest_backup(directory, backup_per_date, base_path, freed_space)
     print(f"Total freed space: {freed_space:.2f} GB")
 
-def clear_duplicate_files(backup_folders, base_path, backup_per_date):
+def clear_duplicate_files(backup_folders: Iterable[str], base_path: Path, backup_per_date: dict[str, list[Path]]):
     """Function will check for duplicate files in the backup folders
     based on size and remove them"""
 
-    size_list = []
+    size_list: list[int] = []
     duplicates = 0
 
     for folder in backup_folders:
@@ -123,13 +126,13 @@ def clear_duplicate_files(backup_folders, base_path, backup_per_date):
                 os.remove(backup_path) #for testing purposes we don't want to delete files
                 print(f"Removed {backup_path} with size {size/(1024**3):.2f} GB")
 
-                # Remove the backup from the dictionary to keep it in sync
-                if folder in backup_per_date and backup in backup_per_date[folder]:
-                    backup_per_date[folder].remove(backup)
+                #remove the backup from the dictionary to keep it in sync
+                if folder in backup_per_date and Path(backup) in backup_per_date[folder]:
+                    backup_per_date[folder].remove(Path(backup))
 
     return duplicates
 
-def clear_backups(location, required_free_space):
+def clear_backups(location: Path, required_free_space: float):
 
     backup_folders = get_backup_folders(location)
     backup_per_date = get_sorted_list(location, backup_folders)
@@ -139,8 +142,8 @@ def clear_backups(location, required_free_space):
     
     print(f"There are a total of {duplicates_amount} duplicate files found, all of them were removed")
 
-def check_and_clear(location, min_free_gb, name):
-    space_left = psutil.disk_usage(location).free / (1024 ** 3)
+def check_and_clear(location: Path, min_free_gb: int, name: str):
+    space_left = psutil.disk_usage(str(location)).free / (1024 ** 3)
 
     print(f"{name} free space: {space_left:.2f} GB")
 

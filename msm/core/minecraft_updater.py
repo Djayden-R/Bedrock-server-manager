@@ -5,6 +5,8 @@ import subprocess
 from msm.config.load_config import Config
 from shutil import rmtree
 import questionary
+from pathlib import Path
+from typing import Optional
 
 console_bridge_repo = "MCXboxBroadcast/Broadcaster"
 minecraft_updater_repo = "ghwns9652/Minecraft-Bedrock-Server-Updater"
@@ -12,14 +14,14 @@ minecraft_updater_repo = "ghwns9652/Minecraft-Bedrock-Server-Updater"
 def clear_console():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def download(url, file_path):
+def download(url: str, file_path: Path):
         r = requests.get(url, stream=True)
 
         with open(file_path, "wb") as f:
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
 
-def get_latest_release(repo_name, download_location, filename=None):
+def get_latest_release(repo_name: str, download_location: Path, filename: Optional[str] = None):
     url = f"https://api.github.com/repos/{repo_name}/releases/latest"
 
     response = requests.get(url)
@@ -30,8 +32,8 @@ def get_latest_release(repo_name, download_location, filename=None):
 
         if asset["name"] == filename:
 
-            #location fo where file will be saved
-            file_path = f"{download_location}/{asset['name']}"
+            #location for where file will be saved
+            file_path = Path(os.path.join(download_location, asset['name']))
 
             #remove file if it already exists
             if os.path.exists(file_path):
@@ -48,8 +50,8 @@ def get_latest_release(repo_name, download_location, filename=None):
 
 def get_console_bridge(cfg: Config):
     if cfg.path_base:
-        console_bridge_folder = os.path.join(cfg.path_base, "console_bridge")
-        console_bridge_file = os.path.join(console_bridge_folder, "MCXboxBroadcastStandalone.jar")
+        console_bridge_folder = Path(os.path.join(cfg.path_base, "console_bridge"))
+        console_bridge_file = Path(os.path.join(console_bridge_folder, "MCXboxBroadcastStandalone.jar"))
         if os.path.exists(console_bridge_file):
             os.remove(console_bridge_file)
 

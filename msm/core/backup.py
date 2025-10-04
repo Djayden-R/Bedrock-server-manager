@@ -5,6 +5,8 @@ from time import monotonic
 from msm.config.load_config import Config
 import shutil
 import tempfile
+from typing import Optional
+from pathlib import Path
 
 def generate_file_name(cfg: Config):
     #generate a name including the date for identification
@@ -17,22 +19,23 @@ def generate_file_name(cfg: Config):
 
     return backup_name, folder_name
 
-def generate_zip(cfg: Config, backup_name):
+def generate_zip(cfg: Config, backup_name: str) -> Optional[Path]:
     #move directories to a temp directory and make a zip file from that temp directory
     if cfg.backup_directories:
         with tempfile.TemporaryDirectory() as temp_dir:
             for directory in cfg.backup_directories:
-                dir_name = os.path.basename(directory.rstrip('/\\'))
-                temp_dest = os.path.join(temp_dir, dir_name)
+                #get name and new location of directory that is getting backed up
+                temp_dest = os.path.join(temp_dir, directory.name)
+                #copy directory to destination
                 shutil.copytree(directory, temp_dest)
             shutil.make_archive(backup_name, "zip", temp_dir)
         print("Zip file generated")
-        return os.path.abspath(os.path.dirname(__file__))
+        return Path(os.path.abspath(os.path.dirname(__file__)))
     else:
         print("There are no backup directories defined")
-        return False
+        return None
 
-def backup_drive(cfg: Config, backup_symlink, folder, filename):
+def backup_drive(cfg: Config, backup_symlink: Path, folder: str, filename: str):
     t_beginning = monotonic()
     #create the backup folder
     subprocess.run(["rclone", "mkdir", f"{cfg.backup_drive_name}{folder}"])
@@ -48,7 +51,7 @@ def backup_drive(cfg: Config, backup_symlink, folder, filename):
     print(f"Drive upload successful, took {monotonic()-t_beginning:.1f} seconds")
 
 
-def update_sym_link(cfg: Config, backup_path):
+def update_sym_link(cfg: Config, backup_path: Path):
     if cfg.backup_local_path:
         location = cfg.backup_local_path
     elif cfg.backup_hdd_path:
@@ -90,7 +93,7 @@ def quick_backup(cfg: Config):
     if not temp_backup_folder:
         return
 
-    temp_backup_path = os.path.join(temp_backup_folder, f"{backup_name}.zip")
+    temp_backup_path = Path(os.path.join(temp_backup_folder, f"{backup_name}.zip"))
     
     #copy the temp backup to the local folder and/or the hdd folder
     if cfg.backup_local_path:
@@ -102,15 +105,17 @@ def quick_backup(cfg: Config):
         backup_folder = os.path.join(cfg.backup_hdd_path, folder_name)
         shutil.copy(temp_backup_path, backup_folder)
 
-def drive_backup(cfg):
+def drive_backup(cfg: Config):
     date = datetime.datetime.now() - datetime.timedelta(days=1) #the update is from the day before, so this is calculated
     folder = date.strftime("backup/%y-%m-%d")
     filename = date.strftime("backup_%H-%M-%S.zip")
-    latest_backup_path = os.path.join(cfg.backup_local_path, "latest_backup.zip") #refer to symlink to the latest backup
+    if cfg.backup_local_path:
+        latest_backup_path = Path(os.path.join(cfg.backup_local_path, "latest_backup.zip")) #refer to symlink to the latest backup
+        backup_drive(cfg, latest_backup_path, folder, filename)
+    else:
+        raise ValueError("Local backup is not defined")
 
-    backup_drive(cfg, latest_backup_path, folder, filename)
-
-def main(cfg: Config, type="quick"): #check correct action, "quick" or "drive"
+def main(cfg: Config, type: str = "quick"): #check correct action, "quick" or "drive"
     if type == "quick":
         quick_backup(cfg)
     elif type == "drive":

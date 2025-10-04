@@ -5,7 +5,7 @@ from msm.config.load_config import Config
 
 def start_checking_playercount(cfg: Config) -> bool:
     if cfg.mc_ip and cfg.timing_shutdown:
-        server = BedrockServer(cfg.mc_ip, cfg.mc_port)
+        server = BedrockServer(str(cfg.mc_ip), cfg.mc_port)
         amount_of_checks = int(cfg.timing_shutdown / 10)
     else:
         raise ValueError(f"Cannot check player count: {'Minecraft ip not defined' if not cfg.mc_ip else ''} {'and timing not defined' if not cfg.timing_shutdown else ''}")
@@ -15,7 +15,7 @@ def start_checking_playercount(cfg: Config) -> bool:
 
     while True:
         try:
-            status = server.status()
+            status = server.status() #type: ignore
             online_players = status.players.online
         except Exception as e:
             print(f"[{datetime.now()}] Error checking server status: {e}")
