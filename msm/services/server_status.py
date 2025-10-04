@@ -2,42 +2,57 @@ from mcstatus import BedrockServer
 from time import sleep
 from datetime import datetime
 from msm.config.load_config import Config
+import os
 
-def start_checking_playercount(cfg: Config) -> bool:
-    if cfg.mc_ip and cfg.timing_shutdown:
-        server = BedrockServer(str(cfg.mc_ip), cfg.mc_port)
-        amount_of_checks = int(cfg.timing_shutdown / 10)
+def check_playercount(cfg: Config) -> bool | str | None:
+
+    if cfg.mc_ip and cfg.timing_shutdown and cfg.mc_port is not None:
+        server = BedrockServer(str(cfg.mc_ip), int(cfg.mc_port))
+        amount_of_checks = max(1, int(cfg.timing_shutdown / 10))
+        interval_seconds = 10
     else:
-        raise ValueError(f"Cannot check player count: {'Minecraft ip not defined' if not cfg.mc_ip else ''} {'and timing not defined' if not cfg.timing_shutdown else ''}")
-    
+        raise ValueError(
+            "Cannot check player count: "
+            f"{'Minecraft ip not defined' if not cfg.mc_ip else ''} "
+            f"{'port not defined' if cfg.mc_port is None else ''} "
+            f"{'and timing not defined' if not cfg.timing_shutdown else ''}"
+        )
+
     times_no_one = 0
     server_used = False
 
     while True:
+        #retrieve player count, skip loop if player count couldn't be found
         try:
-            status = server.status() #type: ignore
+            status = server.status()  # type: ignore
             online_players = status.players.online
         except Exception as e:
             print(f"[{datetime.now()}] Error checking server status: {e}")
-            status = None  # ensure it's defined
-            sleep(5)
+            sleep(interval_seconds)
             continue
 
+        #check if someone is online
         if online_players == 0:
             times_no_one += 1
             print(f"[{datetime.now()}] No one online ({times_no_one}/{amount_of_checks})")
         elif online_players > 0:
             print(f"[{datetime.now()}] Someone online")
-            times_no_one = 0
             server_used = True
+            times_no_one = 0
         else:
             print(f"[{datetime.now()}] Unexpected value: {status.players.online}")
+            return None
 
-        if times_no_one == amount_of_checks:
-            if server_used:
-                return True #backup needed
-            else:
-                return False #no backup needed
+        #if no one has been online for the set time, exit function
+        if times_no_one >= amount_of_checks:
+            #check if no_shutdown flag is present, reset loop if it is
+            if cfg.path_base:
+                if os.path.exists(os.path.join(cfg.path_base, "no_shutdown.flag")):
+                    times_no_one = 0
+                    print(f"[{datetime.now()}] No shutdown flag found, restarting check...")
+                else:
+                    #return if a backup is needed
+                    return True if server_used else False
 
-        sleep(10)
-
+        # wait before next check
+        sleep(interval_seconds)
