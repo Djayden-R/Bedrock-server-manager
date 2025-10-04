@@ -41,7 +41,17 @@ or after adding the alias
 ```bash
 bsm
 ```
-
+### Turning off auto shutdown
+If you need to work on the server without being disturbed by the automatic shutdown you will need to create the no shutdown flag, like this:
+ ```bash
+cd Bedrock-server-manager
+touch no_shutdown.flag
+```
+To make it shutdown again, you'll need to remove the file again:
+ ```bash
+cd Bedrock-server-manager
+rm no_shutdown.flag
+```
 ## Features
 
 - **Home Assistant Integration** - Remote control via IP, token, and entity switches for auto shutdown and updates
