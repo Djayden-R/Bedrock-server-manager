@@ -254,19 +254,19 @@ def main():
         print("Great, downloading now")
         msm.core.minecraft_updater.get_console_bridge(cfg)
         msm.core.minecraft_updater.authenticate_console_bridge(cfg)
-        questionary.press_any_key_to_continue("Press any key if you understand the instructions")
     
+    clear_console()
     #install the minecraft updater and run it to also install the minecraft server
+    print("Downloading Minecraft updater repository...")
     msm.core.minecraft_updater.get_minecraft_updater(cfg)
+    print("Downloading Minecraft server...")
     msm.core.minecraft_updater.update_minecraft_server(cfg)
 
     #ask if the user wants an alias and add it if they do
     #use input() prompts to avoid CPR error
     print("An alias makes it possible to run this program by just typing 'bsm' into the terminal")
-    resp = input("Have you added an alias for this program before? (y/n): ").strip().lower()
-    if resp not in ("y", "yes"):
-        resp2 = input("Would you like to add an alias? (y/n): ").strip().lower()
-        if resp2 in ("y", "yes"):
+    if not questionary.confirm("Have you added an alias for this program before").ask():
+        if questionary.confirm("Would you like to add an alias").ask():
             add_alias()
     
     #give instructions for running the program
