@@ -8,7 +8,8 @@ def check_playercount(cfg: Config) -> bool | str | None:
 
     if cfg.mc_ip and cfg.timing_shutdown and cfg.mc_port is not None:
         server = BedrockServer(str(cfg.mc_ip), int(cfg.mc_port))
-        amount_of_checks = max(1, int(cfg.timing_shutdown / 10))
+        shutdown_sec = cfg.timing_shutdown * 60
+        amount_of_checks = max(1, int(shutdown_sec / 10))
         interval_seconds = 10
     else:
         raise ValueError(
