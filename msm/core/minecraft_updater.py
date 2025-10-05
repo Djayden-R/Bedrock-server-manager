@@ -51,6 +51,8 @@ def get_latest_release(repo_name: str, download_location: Path, filename: Option
 def get_console_bridge(cfg: Config):
     if cfg.path_base:
         console_bridge_folder = Path(os.path.join(cfg.path_base, "console_bridge"))
+        if not console_bridge_folder.exists():
+            os.mkdir(console_bridge_folder)
         console_bridge_file = Path(os.path.join(console_bridge_folder, "MCXboxBroadcastStandalone.jar"))
         if os.path.exists(console_bridge_file):
             os.remove(console_bridge_file)
@@ -61,7 +63,7 @@ def get_console_bridge(cfg: Config):
 
 def authenticate_console_bridge(cfg: Config):
     if cfg.path_base:
-        console_bridge_path = os.path.join(cfg.path_base, "console_bridge/MCXboxBroadcastStandalone.jar")
+        console_bridge_path = os.path.join(cfg.path_base, "console_bridge", "MCXboxBroadcastStandalone.jar")
         if os.path.exists(console_bridge_path):
             console_bridge_dir = os.path.dirname(console_bridge_path)
             process = subprocess.Popen(["java", "-jar", console_bridge_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, cwd=console_bridge_dir)
