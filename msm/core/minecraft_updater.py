@@ -74,7 +74,7 @@ def authenticate_console_bridge(cfg: Config):
                         print("Now you need to go to microsoft.com/link")
                         print(f"Then enter this code: {auth_code}")
                     elif "Successfully authenticated as" in line:
-                        console_bridge_path = os.path.join(cfg.path_base, "msm/console_bridge")
+                        console_bridge_path = os.path.join(cfg.path_base, "console_bridge")
                         clear_console()
                         print("Great the console bridge is now authenticated")
                         print("Only one thing, you will need to edit the config file of the bot yourself")
