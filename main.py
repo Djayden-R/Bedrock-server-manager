@@ -10,6 +10,7 @@ from enum import Enum
 import subprocess
 import os
 from time import sleep
+from pathlib import Path
 
 class Mode(Enum):
     NORMAL = "normal" #normal operating mode, shutdown after 3 minutes with local backup and hdd backup
@@ -71,6 +72,11 @@ def normal_operation():
     else: #if server wasn't updated, start the server manually
         start_server(cfg)
     
+    if cfg.path_base:
+        console_bridge = Path(os.path.join(cfg.path_base, "console_bridge", "MCXboxBroadcastStandalone.jar"))
+        if console_bridge.exists():
+            subprocess.Popen(["java", "-jar", str(console_bridge)])
+
     if cfg.timing_shutdown:
         needs_backup = check_playercount(cfg)
         if needs_backup == True: #server needs backup
