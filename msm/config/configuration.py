@@ -261,9 +261,12 @@ def main():
     msm.core.minecraft_updater.update_minecraft_server(cfg)
 
     #ask if the user wants an alias and add it if they do
+    #use input() prompts to avoid CPR error
     print("An alias makes it possible to run this program by just typing 'bsm' into the terminal")
-    if not questionary.confirm("Have you added an alias for this program before").ask():
-        if questionary.confirm("Would you like to add an alias").ask():
+    resp = input("Have you added an alias for this program before? (y/n): ").strip().lower()
+    if resp not in ("y", "yes"):
+        resp2 = input("Would you like to add an alias? (y/n): ").strip().lower()
+        if resp2 in ("y", "yes"):
             add_alias()
     
     #give instructions for running the program
