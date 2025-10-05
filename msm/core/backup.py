@@ -21,7 +21,7 @@ def generate_file_name(cfg: Config):
 
 def generate_zip(cfg: Config, backup_name: str) -> Optional[Path]:
     #move directories to a temp directory and make a zip file from that temp directory
-    if cfg.backup_directories:
+    if cfg.backup_directories and cfg.path_base:
         with tempfile.TemporaryDirectory() as temp_dir:
             for directory in cfg.backup_directories:
                 directory = Path(directory)
@@ -29,11 +29,14 @@ def generate_zip(cfg: Config, backup_name: str) -> Optional[Path]:
                 temp_dest = os.path.join(temp_dir, directory.name)
                 #copy directory to destination
                 shutil.copytree(directory, temp_dest)
-            shutil.make_archive(backup_name, "zip", temp_dir)
-        print("Zip file generated")
-        return Path(os.path.abspath(os.path.dirname(__file__)))
+                # determine a safe output directory for the archive
+                archive_base = Path(cfg.path_base) / backup_name
+                shutil.make_archive(str(archive_base), "zip", root_dir=temp_dir)
+                archive_path = archive_base.with_suffix('.zip')
+                print(f"Zip file generated: {archive_path}")
+                return archive_path
     else:
-        print("There are no backup directories defined")
+        print("There are no backup directories or base path defined")
         return None
 
 def backup_drive(cfg: Config, backup_symlink: Path, folder: str, filename: str):
@@ -89,12 +92,10 @@ def quick_backup(cfg: Config):
                 os.makedirs(backup_folder)
                 print(f"Created backup folder for today: '{backup_folder}'")
     
-    temp_backup_folder = generate_zip(cfg, backup_name) #generate a temporary zip file in main folder
-    
-    if not temp_backup_folder:
-        return
+    temp_backup_path = generate_zip(cfg, backup_name) #generate a zip file at a predictable location
 
-    temp_backup_path = Path(os.path.join(temp_backup_folder, f"{backup_name}.zip"))
+    if not temp_backup_path:
+        return
     
     #copy the temp backup to the local folder and/or the hdd folder
     if cfg.backup_local_path:
