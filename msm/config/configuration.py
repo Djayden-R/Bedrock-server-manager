@@ -53,7 +53,7 @@ def password_confirm() -> str:
 def dynu_setup():
     print("Let's configure dynu.")
     print("First you must go to https://www.dynu.com and create an account")
-    questionary.press_any_key_to_continue("Press enter once you have created an account.").ask()
+    questionary.press_any_key_to_continue("Press any key once you have created an account.").ask()
 
     print("Nice, now let's get you a custom DNS address")
     if not questionary.confirm("You should be on the control panel, correct?").ask():
@@ -61,12 +61,12 @@ def dynu_setup():
 
     print("There you must click on \"DDNS Services\" and then \"Add\"")
     print("Follow the prompts to create a new DDNS service.")
-    questionary.press_any_key_to_continue("Press enter once you have created a DDNS service.").ask()
+    questionary.press_any_key_to_continue("Press any key once you have created a DDNS service.").ask()
 
     print("Great! Now just add a password to your DDNS service.")
     print("Click on the link next to the red flag \"IP Update Password\"")
     print("And then enter a strong password into the \"New IP Update Password\" and confirm field.")
-    questionary.press_any_key_to_continue("Press enter once you have added a password.").ask()
+    questionary.press_any_key_to_continue("Press any key once you have added a password.").ask()
 
     print("Now that we got your DDNS service set up, let's get your password and domain.")
 
@@ -121,7 +121,7 @@ def shutdown_mode_setup(drive_enabled: bool):
         drive_backup_time = None
     return shutdown_time, begin_valid_time, end_valid_time, drive_backup_time
 
-def automatic_backups_setup(default_path: str) -> tuple[Path, Path | None, str | None, list[Path]]:
+def automatic_backups_setup(program_location: str) -> tuple[Path, Path | None, str | None, list[Path]]:
     clear_console()
     backup_options = questionary.checkbox(
         "There are different options for automatic backups, select the ones you want to use:",
@@ -134,7 +134,7 @@ def automatic_backups_setup(default_path: str) -> tuple[Path, Path | None, str |
 
     local_path = questionary.path(
         "Where do you want to save the local backups?\n DO NOT select the main folder for this project, since backups will also contain previous backups",
-        default=os.path.join(str(default_path).removesuffix("Bedrock-server-manager"), "backups"),
+        default=os.path.join(str(os.path.dirname(program_location)), "backups"),
         only_directories=True
     ).ask()
     
@@ -160,7 +160,7 @@ def automatic_backups_setup(default_path: str) -> tuple[Path, Path | None, str |
         directory = questionary.path(
             "Enter a directory to back up (or leave blank to finish):",
             only_directories=True,
-            default=str(default_path)
+            default=program_location
         ).ask()
         if not directory:
             break
@@ -174,8 +174,8 @@ def get_minecraft_ip():
     s.close()
     return ip
 
-def add_alias():
-    subprocess.run(['bash', '-c', 'echo \'alias bsm="$HOME/Bedrock-server-manager/venv/bin/bedrock-server-manager"\' >> ~/.bashrc'])
+def add_alias(program_location: str):
+    subprocess.run(['bash', '-c', f'echo \'alias bsm="{program_location}"\' >> ~/.bashrc'])
 
 def main():
     print("Hi, there!")
@@ -278,7 +278,9 @@ def main():
         print("Great, downloading now")
         msm.core.minecraft_updater.get_console_bridge(cfg)
         msm.core.minecraft_updater.authenticate_console_bridge(cfg)
-    
+
+    questionary.press_any_key_to_continue("Press any key to continue.").ask()
+
     clear_console()
     #install the minecraft updater and run it to also install the minecraft server
     print("Downloading Minecraft updater repository...")
@@ -291,8 +293,9 @@ def main():
     print("An alias makes it possible to run this program by just typing 'bsm' into the terminal")
     if not questionary.confirm("Have you added an alias for this program before").ask():
         if questionary.confirm("Would you like to add an alias").ask():
-            add_alias()
-    
+            program_path = os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__)
+            add_alias(program_path)
+
     #give instructions for running the program
     print("To make this code work, first reboot this computer and then run 'bsm'")
     print("If you want the code to run on boot, follow the tutorial inside the README.md")
