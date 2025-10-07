@@ -285,6 +285,12 @@ def main():
             print("Great, downloading now")
             msm.core.minecraft_updater.get_console_bridge(cfg)
             msm.core.minecraft_updater.authenticate_console_bridge(cfg)
+            print("Now we just need to configure the bot")
+            print("Luckily it is just two questions\n")
+            host_name = questionary.text("What should the host name (top text) be?").ask()
+            world_name = questionary.text("What should the world name (bottom text) be?").ask()
+
+            msm.core.minecraft_updater.configure_console_bridge(cfg, host_name, world_name)
         else:
             print("No problem")
 

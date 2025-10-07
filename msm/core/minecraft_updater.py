@@ -78,14 +78,7 @@ def authenticate_console_bridge(cfg: Config):
                                 print(f"Then enter this code: {auth_code}")
 
                             elif "Successfully authenticated as" in line:
-                                clear_console()
                                 print("Great! The console bridge is now authenticated.")
-                                print("Now we just need to configure the bot")
-                                print("Luckily it is just two questions\n")
-                                host_name = questionary.text("What should the host name (top text) be?").ask()
-                                world_name = questionary.text("What should the world name (bottom text) be?").ask()
-
-                                configure_console_bridge(cfg, host_name, world_name)
                                 break
 
                     finally:
