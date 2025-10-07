@@ -257,7 +257,7 @@ def main():
     config_data["mc"] = {"ip": mc_ip, "port": mc_port}
     clear_console()
 
-    config_location = Path(os.path.join(os.path.dirname(program_location), "config.yaml"))
+    config_location = Path(os.path.join(program_location, "config.yaml"))
 
     #save the file and warn the user if it contains sensitive information
     with open(config_location, 'w') as f:
