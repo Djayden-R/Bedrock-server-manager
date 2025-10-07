@@ -7,6 +7,7 @@ from shutil import rmtree
 import questionary
 from pathlib import Path
 from typing import Optional
+import yaml
 
 console_bridge_repo = "MCXboxBroadcast/Broadcaster"
 minecraft_updater_repo = "ghwns9652/Minecraft-Bedrock-Server-Updater"
@@ -79,10 +80,12 @@ def authenticate_console_bridge(cfg: Config):
                             elif "Successfully authenticated as" in line:
                                 clear_console()
                                 print("Great! The console bridge is now authenticated.")
-                                print("Next step: edit the config file of the bot manually.")
-                                print(f"Go to: {os.path.join(cfg.path_base, 'console_bridge')}")
-                                print("Then run: sudo nano config.yml")
-                                print("Under 'session-info', enter a name, ip, and port.")
+                                print("Now we just need to configure the bot")
+                                print("Luckily it is just two questions\n")
+                                host_name = questionary.text("What should the host name (top text) be?").ask()
+                                world_name = questionary.text("What should the world name (bottom text) be?").ask()
+
+                                configure_console_bridge(cfg, host_name, world_name)
                                 break
 
                     finally:
@@ -102,6 +105,26 @@ def authenticate_console_bridge(cfg: Config):
             print(f"Checked this path: {console_bridge_path}")
     else:
         raise ValueError("Cannot authenticate console bridge, since base path is not defined")
+
+def configure_console_bridge(cfg: Config, host_name: str, world_name: str):
+    config_path = os.path.join(cfg.path_base, "console_bridge", "config.yml") #type: ignore
+
+    with open(config_path, 'w', encoding='utf-8') as file: #type: ignore
+        data = yaml.safe_load(file)
+    
+    session_info = data['session']['session-info']
+
+    session_info['host-name'] = host_name
+    session_info['world-name'] = world_name
+    session_info['ip'] = cfg.mc_ip
+    session_info['port'] = cfg.mc_port
+
+    data['session']['session-info'] = session_info
+
+    with open(config_path, 'w', encoding='utf-8') as file: #type: ignore
+        yaml.safe_dump(data, file, default_flow_style=False, allow_unicode=True)
+
+
 
 def get_minecraft_updater(cfg: Config):
     if cfg.path_base:
