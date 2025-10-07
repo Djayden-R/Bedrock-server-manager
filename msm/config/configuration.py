@@ -275,11 +275,20 @@ def main():
     
     #install and configure the console bridge
     if questionary.confirm("Do you want to download this program?").ask():
-        print("Great, downloading now")
-        msm.core.minecraft_updater.get_console_bridge(cfg)
-        msm.core.minecraft_updater.authenticate_console_bridge(cfg)
+        print("For the console bridge you will need a throw-away Microsoft account")
+        print("This account will then host your Minecraft world, so players on console can join it\n")
+        print("Also, like the Broadcaster project says:")
+        print("You use this project at your own risk...we emulate some features of a client which may or may not be against TOS")
+        print("So, be warned\n")
 
-    questionary.press_any_key_to_continue("Press any key to continue.").ask()
+        if questionary.confirm("Do you want to continue?").ask():
+            print("Great, downloading now")
+            msm.core.minecraft_updater.get_console_bridge(cfg)
+            msm.core.minecraft_updater.authenticate_console_bridge(cfg)
+        else:
+            print("No problem")
+
+        questionary.press_any_key_to_continue("Press any key to continue.").ask()
 
     clear_console()
     #install the minecraft updater and run it to also install the minecraft server
