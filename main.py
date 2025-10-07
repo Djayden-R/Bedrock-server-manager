@@ -79,27 +79,29 @@ def normal_operation():
             subprocess.Popen(["java", "-jar", str(console_bridge)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=console_bridge_dir)
 
     if cfg.timing_shutdown:
-        needs_backup = check_playercount(cfg)
-        if needs_backup == True: #server needs backup
-            if entity_status(cfg, cfg.ha_shutdown_entity): #type: ignore
-                print(f"[{datetime.now()}] Shutting down Minecraft server...")
-                stop_server(cfg)
-                if cfg.backup_directories:
-                    print(f"[{datetime.now()}] Starting backup script")
-                    backup.main(cfg, type="quick")
-                else:
-                    print(f"[{datetime.now()}] No backup directories, skipping backup")
-                print(f"[{datetime.now()}] Shutting down...")
-                shutdown()
-        elif needs_backup == False: #server doesn't need backup
-            if entity_status(cfg, cfg.ha_shutdown_entity): #type: ignore
-                print(f"[{datetime.now()}] No one online, but server was not used, so backup is not needed")
-                print(f"[{datetime.now()}] Shutting down Minecraft server...")
-                stop_server(cfg)
-                print(f"[{datetime.now()}] Shutting down...")
-                shutdown()
-        elif needs_backup is None: #error occured
-            return
+        while True:
+            needs_backup = check_playercount(cfg)
+            if needs_backup == True: #server needs backup
+                if entity_status(cfg, cfg.ha_shutdown_entity): #type: ignore
+                    print(f"[{datetime.now()}] Shutting down Minecraft server...")
+                    stop_server(cfg)
+                    if cfg.backup_directories:
+                        print(f"[{datetime.now()}] Starting backup script")
+                        backup.main(cfg, type="quick")
+                    else:
+                        print(f"[{datetime.now()}] No backup directories, skipping backup")
+                    print(f"[{datetime.now()}] Shutting down...")
+                    shutdown()
+            elif needs_backup == False: #server doesn't need backup
+                if entity_status(cfg, cfg.ha_shutdown_entity): #type: ignore
+                    print(f"[{datetime.now()}] No one online, but server was not used, so backup is not needed")
+                    print(f"[{datetime.now()}] Shutting down Minecraft server...")
+                    stop_server(cfg)
+                    print(f"[{datetime.now()}] Shutting down...")
+                    shutdown()
+            elif needs_backup is None: #error occured
+                print(f"[{datetime.now()}] Error occurred in check_playercount, cannot proceed with shutdown/backup")
+                break
     else:
         print("WARNING - Auto shutdown is off, this is not reccomended, backups will not work")
         
