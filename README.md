@@ -22,12 +22,11 @@ After setup, the program determines which mode to run based on configuration and
 ## Installation
 
 ### Initial Setup
+Firstly, place the script in the desired location, then just run the following commands in that folder
 
 ```bash
-git clone https://github.com/Djayden-R/Bedrock-server-manager.git
-cd Bedrock-server-manager
-chmod +x setup.sh
-./setup.sh
+chmod +x bedrock-manager
+./bedrock-manager
 ```
 
 The setup script will guide you through the configuration process.
@@ -35,12 +34,13 @@ The setup script will guide you through the configuration process.
 ### Running the Server
 
 ```bash
-./Bedrock-server-manager/venv/bin/bedrock-server-manager
+./{location}/bedrock-manager
 ```
 or after adding the alias
 ```bash
 bsm
 ```
+
 ### Turning off auto shutdown
 If you need to work on the server without being disturbed by the automatic shutdown you will need to create the no shutdown flag, like this:
  ```bash
