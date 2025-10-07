@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Optional, List
 import os
 from ipaddress import IPv4Address, IPv6Address
+import sys
 
 @dataclass(frozen=True)
 class Config:
@@ -38,7 +39,8 @@ class Config:
 
     @classmethod
     def load(cls) -> "Config":
-        dir_path = os.path.dirname(os.path.realpath(__file__))
+        program_location = os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__)
+        dir_path = os.path.dirname(program_location)
         config_location = Path(os.path.join(dir_path, "config.yaml"))
 
         if not config_location.exists():

@@ -166,7 +166,7 @@ def main():
     #gather all variables and save them to a dictionary
     config_data = {}
 
-    program_location = os.path.realpath(__file__).removesuffix("\\msm\\config\\configuration.py").removesuffix("/msm/config/configuration.py")
+    program_location = os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__)
     if questionary.confirm(f"{program_location} \nAre you sure you want to use the above location for this program?").ask():
         print("Great, let's continue")
         config_data["path"] = {"base": program_location}
@@ -235,10 +235,12 @@ def main():
     config_data["mc"] = {"ip": mc_ip, "port": mc_port}
     clear_console()
 
+    config_location = Path(os.path.join(os.path.dirname(program_location), "config.yaml"))
+
     #save the file and warn the user if it contains sensitive information
-    with open('msm/config/config.yaml', 'w') as f:
+    with open(config_location, 'w') as f:
         yaml.dump(config_data, f, default_flow_style=False, indent=2)
-        print("Config file saved to msm/config/config.yaml")
+        print(f"Config file saved to {config_location}")
 
     if dynu or home_assistant:
         print("Never share this file with anyone as it will give access to all of the services you configured")
