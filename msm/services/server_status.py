@@ -50,7 +50,7 @@ def check_playercount(cfg: Config) -> bool | str | None:
             if cfg.path_base:
                 if os.path.exists(os.path.join(cfg.path_base, "no_shutdown.flag")):
                     times_no_one = 0
-                    print(f"[{datetime.now()}] No shutdown flag found, restarting check...")
+                    print(f"[{datetime.now()}] No-shutdown flag found, restarting check...")
                 else:
                     #return if a backup is needed
                     return True if server_used else False

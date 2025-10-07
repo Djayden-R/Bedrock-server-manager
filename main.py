@@ -92,6 +92,8 @@ def normal_operation():
                         print(f"[{datetime.now()}] No backup directories, skipping backup")
                     print(f"[{datetime.now()}] Shutting down...")
                     shutdown()
+                else:
+                    print(f"[{datetime.now()}] Auto shutdown is shut off...")
             elif needs_backup == False: #server doesn't need backup
                 if entity_status(cfg, cfg.ha_shutdown_entity): #type: ignore
                     print(f"[{datetime.now()}] No one online, but server was not used, so backup is not needed")
