@@ -278,7 +278,7 @@ def main():
         print("For the console bridge you will need a throw-away Microsoft account")
         print("This account will then host your Minecraft world, so players on console can join it\n")
         print("Also, like the Broadcaster project says:")
-        print("You use this project at your own risk...we emulate some features of a client which may or may not be against TOS")
+        print("\"You use this project at your own risk...we emulate some features of a client which may or may not be against TOS\"")
         print("So, be warned\n")
 
         if questionary.confirm("Do you want to continue?").ask():
