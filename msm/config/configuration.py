@@ -10,6 +10,28 @@ import msm.core.minecraft_updater
 import subprocess
 import ipaddress
 from pathlib import Path
+import tempfile
+import shutil
+
+def run_setupsh():
+    #make a temp folder
+    tmpdir = tempfile.mkdtemp(prefix="bsm_")
+    print(f"Moving setup.sh to: {tmpdir}")
+    
+    #copy setup.sh file into a temp dir and give it permission to run
+    src = os.path.join(sys._MEIPASS, "setup.sh") #type: ignore
+    dst = os.path.join(tmpdir, "setup.sh")
+    shutil.copy(src, dst)
+    os.chmod(dst, 0o755)
+
+    #run the setup file
+    print("Running setup.sh...")
+    subprocess.run(["bash", dst], check=True)
+    print("Setup finished.")
+
+    #clean up temp dir
+    shutil.rmtree(tmpdir)
+    print("Cleaned up temporary files.")
 
 #setup file for new users
 def linux_check():
@@ -166,7 +188,7 @@ def main():
     #gather all variables and save them to a dictionary
     config_data = {}
 
-    program_location = os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__)
+    program_location = os.path.dirname(os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__))
     if questionary.confirm(f"{program_location} \nAre you sure you want to use the above location for this program?").ask():
         print("Great, let's continue")
         config_data["path"] = {"base": program_location}

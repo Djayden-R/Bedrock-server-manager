@@ -1,9 +1,9 @@
 __pycache__
 *.pyc
-*.code-workspace
 config.yaml
 .venv
 *.egg-info
-requirements.txt
-TODO.md
 tests*
+build
+dist
+main.spec

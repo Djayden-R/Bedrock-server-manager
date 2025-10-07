@@ -128,6 +128,10 @@ def main():
         sys.exit(1)
     elif mode == Mode.CONFIGURATION:
         from msm.config import configuration
+        if getattr(sys, 'frozen', False):
+            configuration.run_setupsh()
         configuration.main()
 
+if __name__ == "__main__":
+    main()
 
