@@ -102,7 +102,7 @@ def authenticate_console_bridge(cfg: Config):
 def configure_console_bridge(cfg: Config, host_name: str, world_name: str):
     config_path = os.path.join(cfg.path_base, "console_bridge", "config.yml") #type: ignore
 
-    with open(config_path, 'w', encoding='utf-8') as file: #type: ignore
+    with open(config_path, 'r', encoding='utf-8') as file: #type: ignore
         data = yaml.safe_load(file)
     
     session_info = data['session']['session-info']
