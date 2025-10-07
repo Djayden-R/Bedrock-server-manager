@@ -62,6 +62,15 @@ def get_console_bridge(cfg: Config):
         print("Cannot get console bridge, since base path is not defined")
 
 def authenticate_console_bridge(cfg: Config):
+    print("For the console bridge you will need a throw-away Microsoft account")
+    print("This account will then host your Minecraft world, so players on console can join it\n")
+    print("Also, like the Broadcaster project says:")
+    print("You use this project at your own risk...we emulate some features of a client which may or may not be against TOS")
+    print("So, be warned\n")
+
+    if not questionary.confirm("Do you want to continue?").ask():
+        return
+    
     if cfg.path_base:
         console_bridge_path = os.path.join(cfg.path_base, "console_bridge", "MCXboxBroadcastStandalone.jar")
         if os.path.exists(console_bridge_path):
