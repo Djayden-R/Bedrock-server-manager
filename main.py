@@ -75,7 +75,8 @@ def normal_operation():
     if cfg.path_base:
         console_bridge = Path(os.path.join(cfg.path_base, "console_bridge", "MCXboxBroadcastStandalone.jar"))
         if console_bridge.exists():
-            subprocess.Popen(["java", "-jar", str(console_bridge)])
+            console_bridge_dir = os.path.join(cfg.path_base, "console_bridge")
+            subprocess.Popen(["java", "-jar", str(console_bridge)], stdout=subprocess.DEVNULL, cwd=console_bridge_dir)
 
     if cfg.timing_shutdown:
         needs_backup = check_playercount(cfg)
