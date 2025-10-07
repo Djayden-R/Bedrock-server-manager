@@ -86,13 +86,11 @@ def authenticate_console_bridge(cfg: Config):
                                 break
 
                     finally:
-                        #ensure the process is terminated properly
-                        print("Stopping console bridge...")
                         process.terminate()
                         try:
                             process.wait(timeout=5)
                         except subprocess.TimeoutExpired:
-                            print("Forcing stop of console bridge...")
+
                             process.kill()
                             process.wait()
                         if process.stdout:
