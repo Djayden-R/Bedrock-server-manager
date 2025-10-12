@@ -54,10 +54,10 @@ rm no_shutdown.flag
 ```
 ## Features
 
-- **Home Assistant Integration** - Remote control via IP, token, and entity switches for auto shutdown and updates
-- **Backup Management** - Multiple backup strategies including local, external drive, and cloud storage using Rclone  
-- **Intelligent Scheduling** - Configurable operating hours and automatic shutdown timeouts
-- **Dynamic DNS** - DynuDNS integration for consistent server addressing
+- **Home Assistant Integration** - Manage auto shutdown via a Home Assistant switch
+- **Backup Management** - Create multiple backups, two to a storage device and one to a cloud service using Rclone  
+- **Intelligent Scheduling** - Cloud backups can be scheduled in the night to make shutdown faster
+- **Dynamic DNS** - DynuDNS integration to make managing a url easy
 
 ## Extra tutorials
 
@@ -76,4 +76,4 @@ This project integrates the following open-source tools:
 
 ## Development Notes
 
-AI assistance was utilized for specific components: `pyproject.toml` configuration, `load_config.py` implementation, and formatting of the `README.md`.
+AI assistance was utilized for specific components: `load_config.py` and formatting of the `README.md`.
