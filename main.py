@@ -9,7 +9,6 @@ from datetime import datetime
 from enum import Enum
 import subprocess
 import os
-from time import sleep
 from pathlib import Path
 
 class Mode(Enum):
@@ -58,7 +57,6 @@ def stop_server(cfg: Config):
     if cfg.path_base:
         mc_updater_path = os.path.join(cfg.path_base, "minecraft_updater")
         subprocess.run(['bash', mc_updater_path+'/updater/stopserver.sh', mc_updater_path])
-        sleep(10)
     else:
         raise ValueError("Base path is not defined")
 
