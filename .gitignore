@@ -7,3 +7,4 @@ tests*
 build
 dist
 main.spec
+setup.cfg
