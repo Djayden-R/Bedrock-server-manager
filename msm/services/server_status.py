@@ -4,6 +4,7 @@ from datetime import datetime
 from msm.config.load_config import Config
 import os
 
+
 def check_playercount(cfg: Config) -> bool | str | None:
 
     if cfg.mc_ip and cfg.timing_shutdown and cfg.mc_port is not None:
@@ -23,7 +24,7 @@ def check_playercount(cfg: Config) -> bool | str | None:
     server_used = False
 
     while True:
-        #retrieve player count, skip loop if player count couldn't be found
+        # retrieve player count, skip loop if player count couldn't be found
         try:
             status = server.status()  # type: ignore
             online_players = status.players.online
@@ -32,7 +33,7 @@ def check_playercount(cfg: Config) -> bool | str | None:
             sleep(interval_seconds)
             continue
 
-        #check if someone is online
+        # check if someone is online
         if online_players == 0:
             times_no_one += 1
             print(f"[{datetime.now()}] No one online ({times_no_one}/{amount_of_checks})")
@@ -44,16 +45,16 @@ def check_playercount(cfg: Config) -> bool | str | None:
             print(f"[{datetime.now()}] Unexpected value: {status.players.online}")
             return None
 
-        #if no one has been online for the set time, exit function
+        # if no one has been online for the set time, exit function
         if times_no_one >= amount_of_checks:
-            #check if no_shutdown flag is present, reset loop if it is
+            # check if no_shutdown flag is present, reset loop if it is
             if cfg.path_base:
                 if os.path.exists(os.path.join(cfg.path_base, "no_shutdown.flag")):
                     times_no_one = 0
                     print(f"[{datetime.now()}] No-shutdown flag found, restarting check...")
                 else:
-                    #return if a backup is needed
+                    # return if a backup is needed
                     return True if server_used else False
 
-        # wait before next check
+        #  wait before next check
         sleep(interval_seconds)

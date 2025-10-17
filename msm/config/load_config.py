@@ -6,6 +6,7 @@ import os
 from ipaddress import IPv4Address, IPv6Address
 import sys
 
+
 @dataclass(frozen=True)
 class Config:
     # Home Assistant
@@ -17,17 +18,17 @@ class Config:
     # Dynu DNS
     dynu_pass: Optional[str] = None
     dynu_domain: Optional[str] = None
-    
+
     # Minecraft Server
     mc_ip: Optional[IPv4Address | IPv6Address] = None
     mc_port: Optional[int] = None
-    
+
     # Backup settings
     backup_local_path: Optional[str] = None
     backup_hdd_path: Optional[str] = None
     backup_drive_name: Optional[str] = None
     backup_directories: Optional[List[str]] = None
-    
+
     # Timing
     timing_begin_valid: Optional[int] = None
     timing_end_valid: Optional[int] = None
@@ -45,9 +46,9 @@ class Config:
 
         if not config_location.exists():
             raise FileNotFoundError(f"Config file not found: {config_location}")
-        
+
         data = yaml.safe_load(config_location.read_text())
-        
+
         # Flatten nested structure
         flat_data = {}
         for section, values in data.items():
@@ -56,5 +57,5 @@ class Config:
                     flat_data[f"{section}_{key}"] = value
             else:
                 flat_data[section] = values
-                
-        return cls(**flat_data) # type: ignore
+
+        return cls(**flat_data)  # type: ignore

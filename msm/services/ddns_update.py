@@ -4,6 +4,7 @@ from msm.config.load_config import Config
 
 url = "https://api.dynu.com/nic/update"
 
+
 def update_DNS(cfg: Config):
 
     params = {

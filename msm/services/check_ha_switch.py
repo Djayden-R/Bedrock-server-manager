@@ -4,9 +4,10 @@ from msm.config.load_config import Config
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-def entity_status(cfg:Config, input_boolean: str):
+
+def entity_status(cfg: Config, input_boolean: str):
     url = f"{cfg.ha_ip}/api/states/{input_boolean}"
-    
+
     headers = {
         "Authorization": f"Bearer {cfg.ha_token}",
         "content-type": "application/json",

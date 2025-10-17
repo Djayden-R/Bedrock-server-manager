@@ -1,10 +1,9 @@
-from socket import socket
+import socket
 import sys
 import time
 import questionary
 import os
 import yaml
-import socket
 from msm.config.load_config import Config
 import msm.core.minecraft_updater
 import subprocess
@@ -13,34 +12,38 @@ from pathlib import Path
 import tempfile
 import shutil
 
+
 def run_setupsh():
-    #make a temp folder
+    # make a temp folder
     tmpdir = tempfile.mkdtemp(prefix="bsm_")
     print(f"Moving setup.sh to: {tmpdir}")
-    
-    #copy setup.sh file into a temp dir and give it permission to run
-    src = os.path.join(sys._MEIPASS, "setup.sh") #type: ignore
+
+    # copy setup.sh file into a temp dir and give it permission to run
+    src = os.path.join(sys._MEIPASS, "setup.sh")  # type: ignore
     dst = os.path.join(tmpdir, "setup.sh")
     shutil.copy(src, dst)
     os.chmod(dst, 0o755)
 
-    #run the setup file
+    # run the setup file
     print("Running setup.sh...")
     subprocess.run(["bash", dst], check=True)
     print("Setup finished.")
 
-    #clean up temp dir
+    # clean up temp dir
     shutil.rmtree(tmpdir)
     print("Cleaned up temporary files.")
 
-#setup file for new users
+
+# setup file for new users
 def linux_check():
     if sys.platform != "linux":
         print("You are not running Linux. This program will not work as expected.")
         input("Press enter to continue or ctrl+c to exit.")
 
+
 def clear_console():
     os.system('cls' if os.name == 'nt' else 'clear')
+
 
 def password_confirm() -> str:
     dynu_password = questionary.password("What is your ddns password?").ask()
@@ -49,6 +52,7 @@ def password_confirm() -> str:
         print("Passwords do not match. Please try again.")
         return password_confirm()
     return dynu_password
+
 
 def dynu_setup():
     print("Let's configure dynu.")
@@ -74,11 +78,14 @@ def dynu_setup():
     dynu_domain = questionary.text("What is your dynu domain?").ask()
     return dynu_password, dynu_domain
 
+
 def home_assistant_setup():
     clear_console()
     print("Home Assistant will be used for some automatic tasks, like updating and backups")
     print("But in order to use Home Assistant we will need its ip and token")
-    home_assistant_ip = questionary.text("What is you Home Assistant address?", validate=lambda val: val.startswith("http://") or val.startswith("https://") or "Must start with http:// or https://", default="http://").ask() #type: ignore
+    home_assistant_ip = questionary.text("What is you Home Assistant address?",
+                                         validate=lambda val: val.startswith("http://") or val.startswith("https://") or "Must start with http:// or https://",  # type: ignore
+                                         default="http://").ask()
     print("Getting your token is fairly easy")
     print("Go to your profile in the bottom-left corner, then to the security tab.\nAt the bottom you will see long lived access token, create one, name it something like Bedrock server manager")
     print("Then paste the token bellow")
@@ -87,8 +94,9 @@ def home_assistant_setup():
     print("Now we have to set up a switch")
     print("First make a switch for turning on and off auto shutdown (useful for debugging)")
     print("Go to settings > devices and services > helpers > add (switch)")
-    auto_shutdown_entity = questionary.text("Name of switch: ", validate=lambda val: val.startswith("input_boolean.") or "helper must be a switch", default="input_boolean.").ask() #type: ignore
+    auto_shutdown_entity = questionary.text("Name of switch: ", validate=lambda val: val.startswith("input_boolean.") or "helper must be a switch", default="input_boolean.").ask()  # type: ignore
     return home_assistant_ip, home_assistant_token, auto_shutdown_entity
+
 
 def shutdown_mode_setup(drive_enabled: bool):
     clear_console()
@@ -96,30 +104,31 @@ def shutdown_mode_setup(drive_enabled: bool):
     if questionary.confirm("Would you like to enable that?").ask():
         shutdown_time = int(questionary.text(
             "After how many minutes of inactivity should the server shutdown?",
-            validate=lambda val: val.isdigit() or "Enter a number" #type: ignore
+            validate=lambda val: val.isdigit() or "Enter a number"  # type: ignore
         ).ask())
         if questionary.confirm("It is also possible to enable certain timeframes where the server will not startup.\nWould you like to enable that?").ask():
             begin_valid_time = int(questionary.text(
                 "Enter the start time in 24h format HH",
-                validate=lambda val: val.isdigit() and 0 <= int(val.removeprefix("0") if len(val) > 1 else val) < 24 or "Enter a valid time in HH format" #type: ignore
+                validate=lambda val: val.isdigit() and 0 <= int(val.removeprefix("0") if len(val) > 1 else val) < 24 or "Enter a valid time in HH format"  # type: ignore
             ).ask().removeprefix("0"))
             end_valid_time = int(questionary.text(
                 "Enter the end time in 24h format (HH)",
-                validate=lambda val: val.isdigit() and 0 <= int(val.removeprefix("0") if len(val) > 1 else val) < 24 or "Enter a valid time in HH format" #type: ignore
+                validate=lambda val: val.isdigit() and 0 <= int(val.removeprefix("0") if len(val) > 1 else val) < 24 or "Enter a valid time in HH format"  # type: ignore
             ).ask().removeprefix("0"))
         begin_valid_time = end_valid_time = None
     else:
         shutdown_time = begin_valid_time = end_valid_time = None
-    
+
     if drive_enabled:
         drive_backup_time = int(questionary.text(
             "At what time do you want the server to create drive backup?",
-                validate=lambda val: val.isdigit() and 0 <= int(val.removeprefix("0")) < 24 or "Enter a valid time in HH format", #type: ignore
-                default="3"
-                ).ask().removeprefix("0"))
+            validate=lambda val: val.isdigit() and 0 <= int(val.removeprefix("0")) < 24 or "Enter a valid time in HH format",  # type: ignore
+            default="3"
+            ).ask().removeprefix("0"))
     else:
         drive_backup_time = None
     return shutdown_time, begin_valid_time, end_valid_time, drive_backup_time
+
 
 def automatic_backups_setup(program_location: str) -> tuple[Path, Path | None, str | None, list[Path]]:
     clear_console()
@@ -128,7 +137,7 @@ def automatic_backups_setup(program_location: str) -> tuple[Path, Path | None, s
         choices=["Local backup", "Back up to external drive", "Drive backup"],
         validate=lambda var: True if "Local backup" in var else "Local backup is required"
     ).ask()
-    
+
     hdd_backup = "Back up to external drive" in backup_options
     drive_backup = "Drive backup" in backup_options
 
@@ -137,7 +146,7 @@ def automatic_backups_setup(program_location: str) -> tuple[Path, Path | None, s
         default=os.path.join(str(os.path.dirname(program_location)), "backups"),
         only_directories=True
     ).ask()
-    
+
     if hdd_backup:
         hdd_path = questionary.path(
             "Where do you want to save the external drive backups?",
@@ -150,7 +159,7 @@ def automatic_backups_setup(program_location: str) -> tuple[Path, Path | None, s
         print("You will need rclone for drive backups, so make sure you have it set up")
         drive_name = str(questionary.text(
             "What is the name of your rclone remote? (something like 'drive:')",
-            validate=lambda val: val.endswith(":") or "Remote name must end with ':'" #type: ignore
+            validate=lambda val: val.endswith(":") or "Remote name must end with ':'"  # type: ignore
         ).ask())
     else:
         drive_name = None
@@ -167,6 +176,7 @@ def automatic_backups_setup(program_location: str) -> tuple[Path, Path | None, s
         directories.append(directory)
     return local_path, hdd_path, drive_name, directories
 
+
 def get_minecraft_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
@@ -174,8 +184,10 @@ def get_minecraft_ip():
     s.close()
     return ip
 
+
 def add_alias(program_location: str):
     subprocess.run(['bash', '-c', f'echo \'alias bsm="{program_location}"\' >> ~/.bashrc'])
+
 
 def main():
     print("Hi, there!")
@@ -185,7 +197,7 @@ def main():
 
     clear_console()
 
-    #gather all variables and save them to a dictionary
+    # gather all variables and save them to a dictionary
     config_data = {}
 
     program_location = os.path.dirname(os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__))
@@ -196,12 +208,10 @@ def main():
         print("Please move this program to the location you want to use and run it again.")
         time.sleep(3)
         sys.exit(0)
-    
+
     questionary.press_any_key_to_continue("I am going to ask you a few questions to set everything up.").ask()
 
-    services = questionary.checkbox(
-    "What services do you want to set up?", choices=["Home Assistant", "Dynu DNS", "Automatic shutdown", "Automatic backups"]).ask()
-
+    services = questionary.checkbox("What services do you want to set up?", choices=["Home Assistant", "Dynu DNS", "Automatic shutdown", "Automatic backups"]).ask()
 
     home_assistant = "Home Assistant" in services
     dynu = "Dynu DNS" in services
@@ -218,23 +228,22 @@ def main():
 
     if auto_backup:
         local_path, hdd_path, drive_name, directories = automatic_backups_setup(program_location)
-        config_data["backup"] = {k: v for k, v in [("local_path", local_path), ("hdd_path", hdd_path), ("drive_name", drive_name), ("directories", directories)] if v is not None} #type: ignore
+        config_data["backup"] = {k: v for k, v in [("local_path", local_path), ("hdd_path", hdd_path), ("drive_name", drive_name), ("directories", directories)] if v is not None}  # type: ignore
     else:
         drive_name = None
-    
+
     if auto_backup and drive_name:
         drive_enabled = True
     else:
         drive_enabled = False
-    
+
     if auto_shutdown:
         shutdown_time, begin_valid_time, end_valid_time, drive_backup_time = shutdown_mode_setup(drive_enabled)
-        config_data["timing"] = {k: v for k, v in [("shutdown", shutdown_time), ("begin_valid", begin_valid_time), ("end_valid", end_valid_time), ("drive_backup", drive_backup_time)] if v is not None} #type: ignore
-
+        config_data["timing"] = {k: v for k, v in [("shutdown", shutdown_time), ("begin_valid", begin_valid_time), ("end_valid", end_valid_time), ("drive_backup", drive_backup_time)] if v is not None}  # type: ignore
 
     clear_console()
-    
-    #automatically get the users ip and confirm if it's right
+
+    # automatically get the users ip and confirm if it's right
     mc_ip = get_minecraft_ip()
 
     def validate_local_ip(ip: str) -> bool:
@@ -245,35 +254,32 @@ def main():
             return False
 
     if not questionary.confirm(f"Is this your local ip: {mc_ip}").ask():
-        mc_ip = questionary.text("Please add your local ip:",
-                 default= "192.168.1.1",
-                 validate=validate_local_ip
-        ).ask()
+        mc_ip = questionary.text("Please add your local ip:", default="192.168.1.1", validate=validate_local_ip).ask()
 
-    #ask for the minecraft port (type checking is not needed, because variable is always string)
-    mc_port = int(questionary.text("Enter the Minecraft server port:", default="19132", validate=lambda x: x.isdigit()).ask()) # type: ignore
-    
-    #save the minecraft data
+    # ask for the minecraft port (type checking is not needed, because variable is always string)
+    mc_port = int(questionary.text("Enter the Minecraft server port:", default="19132", validate=lambda x: x.isdigit()).ask())  # type: ignore
+
+    # save the minecraft data
     config_data["mc"] = {"ip": mc_ip, "port": mc_port}
     clear_console()
 
     config_location = Path(os.path.join(program_location, "config.yaml"))
 
-    #save the file and warn the user if it contains sensitive information
+    # save the file and warn the user if it contains sensitive information
     with open(config_location, 'w') as f:
         yaml.dump(config_data, f, default_flow_style=False, indent=2)
         print(f"Config file saved to {config_location}")
 
     if dynu or home_assistant:
         print("Never share this file with anyone as it will give access to all of the services you configured")
-    
-    #load config we just saved
+
+    # load config we just saved
     cfg = Config.load()
 
-    #ask permission to download the repositories
+    # ask permission to download the repositories
     print("This program can uses MCXboxBroadcast/Broadcaster to make it possible for console players to join the server, this is optional")
-    
-    #install and configure the console bridge
+
+    # install and configure the console bridge
     if questionary.confirm("Do you want to download this program?").ask():
         print("For the console bridge you will need a throw-away Microsoft account")
         print("This account will then host your Minecraft world, so players on console can join it\n")
@@ -297,23 +303,24 @@ def main():
         questionary.press_any_key_to_continue("Press any key to continue.").ask()
 
     clear_console()
-    #install the minecraft updater and run it to also install the minecraft server
+    # install the minecraft updater and run it to also install the minecraft server
     print("Downloading Minecraft updater repository...")
     msm.core.minecraft_updater.get_minecraft_updater(cfg)
     print("Downloading Minecraft server...")
     msm.core.minecraft_updater.update_minecraft_server(cfg)
 
-    #ask if the user wants an alias and add it if they do
-    #use input() prompts to avoid CPR error
+    # ask if the user wants an alias and add it if they do
+    # use input() prompts to avoid CPR error
     print("An alias makes it possible to run this program by just typing 'bsm' into the terminal")
     if not questionary.confirm("Have you added an alias for this program before").ask():
         if questionary.confirm("Would you like to add an alias").ask():
             program_path = os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__)
             add_alias(program_path)
 
-    #give instructions for running the program
+    # give instructions for running the program
     print("To make this code work, first reboot this computer and then run 'bsm'")
     print("If you want the code to run on boot, follow the tutorial inside the README.md")
+
 
 if __name__ == "__main__":
     main()

@@ -12,15 +12,18 @@ import yaml
 console_bridge_repo = "MCXboxBroadcast/Broadcaster"
 minecraft_updater_repo = "ghwns9652/Minecraft-Bedrock-Server-Updater"
 
+
 def clear_console():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def download(url: str, file_path: Path):
-        r = requests.get(url, stream=True)
 
-        with open(file_path, "wb") as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                f.write(chunk)
+def download(url: str, file_path: Path):
+    r = requests.get(url, stream=True)
+
+    with open(file_path, "wb") as f:
+        for chunk in r.iter_content(chunk_size=8192):
+            f.write(chunk)
+
 
 def get_latest_release(repo_name: str, download_location: Path, filename: Optional[str] = None):
     url = f"https://api.github.com/repos/{repo_name}/releases/latest"
@@ -33,21 +36,22 @@ def get_latest_release(repo_name: str, download_location: Path, filename: Option
 
         if asset["name"] == filename:
 
-            #location for where file will be saved
+            # location for where file will be saved
             file_path = Path(os.path.join(download_location, asset['name']))
 
-            #remove file if it already exists
+            # remove file if it already exists
             if os.path.exists(file_path):
                 os.remove(file_path)
-            
-            #download file to it's location
+
+            # download file to it's location
             download(asset["browser_download_url"], file_path)
 
-            #check if file downloaded successfully
+            # check if file downloaded successfully
             if os.path.exists(file_path):
                 print("File is successfully downloaded")
             else:
                 print("Problem during download")
+
 
 def get_console_bridge(cfg: Config):
     if cfg.path_base:
@@ -62,6 +66,7 @@ def get_console_bridge(cfg: Config):
     else:
         print("Cannot get console bridge, since base path is not defined")
 
+
 def authenticate_console_bridge(cfg: Config):
     if cfg.path_base:
         console_bridge_path = os.path.join(cfg.path_base, "console_bridge", "MCXboxBroadcastStandalone.jar")
@@ -69,28 +74,28 @@ def authenticate_console_bridge(cfg: Config):
             console_bridge_dir = os.path.dirname(console_bridge_path)
             process = subprocess.Popen(["java", "-jar", console_bridge_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, cwd=console_bridge_dir)
             if process.stdout:
+                try:
+                    for line in process.stdout:
+                        if "enter the code" in line:
+                            cleaned_auth_line = line.split("enter the code ")[1]
+                            auth_code = cleaned_auth_line.split()[0]
+                            print("Now you need to go to https://microsoft.com/link")
+                            print(f"Then enter this code: {auth_code}")
+
+                        elif "Successfully authenticated as" in line:
+                            print("Great! The console bridge is now authenticated.")
+                            break
+
+                finally:
+                    process.terminate()
                     try:
-                        for line in process.stdout:
-                            if "enter the code" in line:
-                                cleaned_auth_line = line.split("enter the code ")[1]
-                                auth_code = cleaned_auth_line.split()[0]
-                                print("Now you need to go to https://microsoft.com/link")
-                                print(f"Then enter this code: {auth_code}")
+                        process.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
 
-                            elif "Successfully authenticated as" in line:
-                                print("Great! The console bridge is now authenticated.")
-                                break
-
-                    finally:
-                        process.terminate()
-                        try:
-                            process.wait(timeout=5)
-                        except subprocess.TimeoutExpired:
-
-                            process.kill()
-                            process.wait()
-                        if process.stdout:
-                            process.stdout.close()
+                        process.kill()
+                        process.wait()
+                    if process.stdout:
+                        process.stdout.close()
             else:
                 print("There is no output from the console bridge")
         else:
@@ -99,12 +104,13 @@ def authenticate_console_bridge(cfg: Config):
     else:
         raise ValueError("Cannot authenticate console bridge, since base path is not defined")
 
-def configure_console_bridge(cfg: Config, host_name: str, world_name: str):
-    config_path = os.path.join(cfg.path_base, "console_bridge", "config.yml") #type: ignore
 
-    with open(config_path, 'r', encoding='utf-8') as file: #type: ignore
+def configure_console_bridge(cfg: Config, host_name: str, world_name: str):
+    config_path = os.path.join(cfg.path_base, "console_bridge", "config.yml")  # type: ignore
+
+    with open(config_path, 'r', encoding='utf-8') as file:  # type: ignore
         data = yaml.safe_load(file)
-    
+
     session_info = data['session']['session-info']
 
     session_info['host-name'] = host_name
@@ -114,9 +120,8 @@ def configure_console_bridge(cfg: Config, host_name: str, world_name: str):
 
     data['session']['session-info'] = session_info
 
-    with open(config_path, 'w', encoding='utf-8') as file: #type: ignore
+    with open(config_path, 'w', encoding='utf-8') as file:  # type: ignore
         yaml.safe_dump(data, file, default_flow_style=False, allow_unicode=True)
-
 
 
 def get_minecraft_updater(cfg: Config):
@@ -133,10 +138,11 @@ def get_minecraft_updater(cfg: Config):
                     print("Didn't update minecraft_updater")
             else:
                 rmtree(mc_updater_path)
-                
+
         Repo.clone_from(f"https://github.com/{minecraft_updater_repo}.git", mc_updater_path, )
     else:
         print("Cannot get Minecraft updater, since download location is not defined")
+
 
 def update_minecraft_server(cfg: Config):
     if cfg.path_base:
@@ -153,6 +159,7 @@ def update_minecraft_server(cfg: Config):
             raise ValueError(f"Unknown state: {minecraft_updater_output.stdout} \nerror: {minecraft_updater_output.stderr}")
     else:
         raise ValueError("Cannot update Minecraft server, since base path is not defined")
+
 
 def main(cfg: Config):
     get_console_bridge(cfg)
