@@ -7,6 +7,10 @@ import shutil
 import tempfile
 from typing import Optional
 from pathlib import Path
+import logging
+
+# Get logger
+log = logging.getLogger("bsm")
 
 
 def generate_file_name(cfg: Config):
@@ -16,7 +20,7 @@ def generate_file_name(cfg: Config):
     folder_name = date.strftime("%Y-%m-%d")
     backup_name = date.strftime('backup_%H-%M-%S')
 
-    print(f"Name of the file will be: '{backup_name}.zip'")
+    log.info(f"Name of the file will be: '{backup_name}.zip'")
 
     return backup_name, folder_name
 
@@ -35,10 +39,10 @@ def generate_zip(cfg: Config, backup_name: str) -> Optional[Path]:
                 archive_base = Path(cfg.path_base) / backup_name
                 shutil.make_archive(str(archive_base), "zip", root_dir=temp_dir)
                 archive_path = archive_base.with_suffix('.zip')
-                print(f"Zip file generated: {archive_path}")
+                log.info(f"Zip file generated: {archive_path}")
                 return archive_path
     else:
-        print("There are no backup directories or base path defined")
+        log.warning("There are no backup directories or base path defined")
         return None
 
 
@@ -47,7 +51,7 @@ def backup_drive(cfg: Config, backup_symlink: Path, folder: str, filename: str):
     # create the backup folder
     subprocess.run(["rclone", "mkdir", f"{cfg.backup_drive_name}{folder}"])
 
-    print("Starting upload to drive...")
+    log.info("Starting upload to drive...")
 
     # get the actual path from the symlink
     backup_path = os.path.realpath(backup_symlink)
@@ -55,7 +59,7 @@ def backup_drive(cfg: Config, backup_symlink: Path, folder: str, filename: str):
     # upload to drive via rclone
     subprocess.run(["rclone", "copyto", backup_path, f"{cfg.backup_drive_name}{folder}/{filename}"])
 
-    print(f"Drive upload successful, took {monotonic()-t_beginning:.1f} seconds")
+    log.info(f"Drive upload successful, took {monotonic()-t_beginning:.1f} seconds")
 
 
 def update_sym_link(cfg: Config, backup_path: Path):
@@ -70,7 +74,7 @@ def update_sym_link(cfg: Config, backup_path: Path):
 
         # save latest backup to a symlink, so it can be accessed later for the drive backup
         os.symlink(backup_path, symlink)
-        print(f"Symlink: '{symlink}' points to '{backup_path}'")
+        log.info(f"Symlink: '{symlink}' points to '{backup_path}'")
     else:
         raise ValueError("Base path is not defined")
 
@@ -92,7 +96,7 @@ def quick_backup(cfg: Config):
             backup_folder = os.path.join(backup_location, folder_name)
             if not os.path.exists(backup_folder):
                 os.makedirs(backup_folder)
-                print(f"Created backup folder for today: '{backup_folder}'")
+                log.info(f"Created backup folder for today: '{backup_folder}'")
 
     temp_backup_path = generate_zip(cfg, backup_name)  # generate a zip file at a predictable location
 

@@ -3,6 +3,10 @@ from time import sleep
 from datetime import datetime
 from msm.config.load_config import Config
 import os
+import logging
+
+# Get logger
+log = logging.getLogger("bsm")
 
 
 def check_playercount(cfg: Config) -> bool | str | None:
@@ -29,20 +33,20 @@ def check_playercount(cfg: Config) -> bool | str | None:
             status = server.status()  # type: ignore
             online_players = status.players.online
         except Exception as e:
-            print(f"[{datetime.now()}] Error checking server status: {e}")
+            log.error(f"[{datetime.now()}] Error checking server status: {e}")
             sleep(interval_seconds)
             continue
 
         # check if someone is online
         if online_players == 0:
             times_no_one += 1
-            print(f"[{datetime.now()}] No one online ({times_no_one}/{amount_of_checks})")
+            log.info(f"[{datetime.now()}] No one online ({times_no_one}/{amount_of_checks})")
         elif online_players > 0:
-            print(f"[{datetime.now()}] Someone online")
+            log.info(f"[{datetime.now()}] Someone online")
             server_used = True
             times_no_one = 0
         else:
-            print(f"[{datetime.now()}] Unexpected value: {status.players.online}")
+            log.error(f"[{datetime.now()}] Unexpected value: {status.players.online}")
             return None
 
         # if no one has been online for the set time, exit function
@@ -51,7 +55,7 @@ def check_playercount(cfg: Config) -> bool | str | None:
             if cfg.path_base:
                 if os.path.exists(os.path.join(cfg.path_base, "no_shutdown.flag")):
                     times_no_one = 0
-                    print(f"[{datetime.now()}] No-shutdown flag found, restarting check...")
+                    log.info(f"[{datetime.now()}] No-shutdown flag found, restarting check...")
                 else:
                     # return if a backup is needed
                     return True if server_used else False

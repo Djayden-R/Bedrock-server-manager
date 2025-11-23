@@ -4,6 +4,10 @@ from datetime import datetime
 from msm.config.load_config import Config
 from pathlib import Path
 from typing import Iterable
+import logging
+
+# Get logger
+log = logging.getLogger("bsm")
 
 
 def get_backup_folders(location: Path):
@@ -37,9 +41,9 @@ def remove_oldest_backup(backup_dates: Iterable[str], backup_per_date: dict[str,
             oldest_backup_path = os.path.join(base_path, oldest_backup_date, oldest_backup)
             oldest_backup_size = os.path.getsize(oldest_backup_path) / (1024 ** 3)
 
-            print(f"\nRemoving old backup from {oldest_backup_date} folder: {oldest_backups}")
-            print(f"Oldest backup: {oldest_backup} ({oldest_backup_size:.2f} GB)")
-            print(f"Removing old backup: {oldest_backup_date} at {oldest_backup}")
+            log.info(f"\nRemoving old backup from {oldest_backup_date} folder: {oldest_backups}")
+            log.info(f"Oldest backup: {oldest_backup} ({oldest_backup_size:.2f} GB)")
+            log.info(f"Removing old backup: {oldest_backup_date} at {oldest_backup}")
             os.remove(oldest_backup_path)
             freed_space += oldest_backup_size
             #  Remove the backup from the dictionary to avoid trying to delete it again
@@ -76,16 +80,16 @@ def clear_old_backups(backup_per_date: dict[str, list[Path]], required_free_spac
         else:
             old_backups.append(date)
 
-    print(f"Last 7 days backups: {last_7_days} with a total of {amount_backups_last_7} backups")
-    print(f"Last 30 days backups: {last_30_days} with a total of {amount_backups_last_30} backups")
-    print(f"Old backups: {old_backups} with a total of {amount_backups_old} backups")
+    log.info(f"Last 7 days backups: {last_7_days} with a total of {amount_backups_last_7} backups")
+    log.info(f"Last 30 days backups: {last_30_days} with a total of {amount_backups_last_30} backups")
+    log.info(f"Old backups: {old_backups} with a total of {amount_backups_old} backups")
 
     previous_freed_space = -1
 
     while freed_space < required_free_space:
         # check to prevent infinite loops
         if freed_space == previous_freed_space:
-            print(f"No more space can be freed. Current freed space: {freed_space:.2f} GB, Required: {required_free_space:.2f} GB")
+            log.info(f"No more space can be freed. Current freed space: {freed_space:.2f} GB, Required: {required_free_space:.2f} GB")
             break
         previous_freed_space = freed_space
 
@@ -94,14 +98,14 @@ def clear_old_backups(backup_per_date: dict[str, list[Path]], required_free_spac
         elif last_30_days:
             directory = last_30_days
         elif freed_space < required_free_space:
-            print("ERROR - No more old backups to remove, but not enough space freed.")
+            log.error("No more old backups to remove, but not enough space freed.")
             break
         else:
             directory = None
 
         if directory is not None:
             freed_space = remove_oldest_backup(directory, backup_per_date, base_path, freed_space)
-    print(f"Total freed space: {freed_space:.2f} GB")
+    log.info(f"Total freed space: {freed_space:.2f} GB")
 
 
 def clear_duplicate_files(backup_folders: Iterable[str], base_path: Path, backup_per_date: dict[str, list[Path]]):
@@ -126,10 +130,10 @@ def clear_duplicate_files(backup_folders: Iterable[str], base_path: Path, backup
             # file might be a duplicate, so we remove it
             # we don't use a checksum, because it is slow and many backups aren't exact duplicates
             else:
-                print("Duplicate found")
+                log.info("Duplicate found")
                 duplicates += 1
                 os.remove(backup_path)  # for testing purposes we don't want to delete files
-                print(f"Removed {backup_path} with size {size/(1024**3):.2f} GB")
+                log.info(f"Removed {backup_path} with size {size/(1024**3):.2f} GB")
 
                 # remove the backup from the dictionary to keep it in sync
                 if folder in backup_per_date and Path(backup) in backup_per_date[folder]:
@@ -146,28 +150,28 @@ def clear_backups(location: Path, required_free_space: float):
     duplicates_amount = clear_duplicate_files(backup_folders, location, backup_per_date)
     clear_old_backups(backup_per_date, required_free_space, location)
 
-    print(f"There are a total of {duplicates_amount} duplicate files found, all of them were removed")
+    log.info(f"There are a total of {duplicates_amount} duplicate files found, all of them were removed")
 
 
 def check_and_clear(location: Path, min_free_gb: int, name: str):
     space_left = psutil.disk_usage(str(location)).free / (1024 ** 3)
 
-    print(f"{name} free space: {space_left:.2f} GB")
+    log.info(f"{name} free space: {space_left:.2f} GB")
 
     if space_left < min_free_gb:
-        print(f"Less than {min_free_gb} GB left on {name}, clearing backup's...")
+        log.info(f"Less than {min_free_gb} GB left on {name}, clearing backup's...")
         required_free_space = min_free_gb - space_left  # in GB
         clear_backups(location, required_free_space)
     else:
-        print(f"More than {min_free_gb} GB left on {name}, no need to clear backups.")
+        log.info(f"More than {min_free_gb} GB left on {name}, no need to clear backups.")
 
 
 def main(cfg: Config):
     if cfg.backup_local_path:
         check_and_clear(Path(cfg.backup_local_path), 30, "Local Backup")
     else:
-        print("Not checking local backup folder, since it doesn't exist")
+        log.info("Not checking local backup folder, since it doesn't exist")
     if cfg.backup_hdd_path:
         check_and_clear(Path(cfg.backup_hdd_path), 50, "HDD Backup")
     else:
-        print("Not checking hdd backup folder, since it doesn't exist")
+        log.info("Not checking hdd backup folder, since it doesn't exist")
