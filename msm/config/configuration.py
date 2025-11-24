@@ -5,36 +5,41 @@ import questionary
 import os
 import yaml
 from msm.config.load_config import Config
+from msm.services.check_ha import check_api
 import msm.core.minecraft_updater
+from msm.services.ddns_update import update_DNS
 import subprocess
 import ipaddress
 from pathlib import Path
 import tempfile
 import shutil
+from rich import print
+from rich.spinner import Spinner
+from rich.live import Live
 
 
 def run_setupsh():
-    # make a temp folder
+    # Make a temp folder
     tmpdir = tempfile.mkdtemp(prefix="bsm_")
     print(f"Moving setup.sh to: {tmpdir}")
 
-    # copy setup.sh file into a temp dir and give it permission to run
+    # Copy setup.sh file into a temp dir and give it permission to run
     src = os.path.join(sys._MEIPASS, "setup.sh")  # type: ignore
     dst = os.path.join(tmpdir, "setup.sh")
     shutil.copy(src, dst)
     os.chmod(dst, 0o755)
 
-    # run the setup file
+    # Run the setup file
     print("Running setup.sh...")
     subprocess.run(["bash", dst], check=True)
     print("Setup finished.")
 
-    # clean up temp dir
+    # Clean up temp dir
     shutil.rmtree(tmpdir)
     print("Cleaned up temporary files.")
 
 
-# setup file for new users
+# Setup file for new users
 def linux_check():
     if sys.platform != "linux":
         print("You are not running Linux. This program will not work as expected.")
@@ -55,11 +60,13 @@ def password_confirm() -> str:
 
 
 def dynu_setup():
+    clear_console()
+
     print("Let's configure dynu.")
     print("First you must go to https://www.dynu.com and create an account")
     questionary.press_any_key_to_continue("Press any key once you have created an account.").ask()
 
-    print("Nice, now let's get you a custom DNS address")
+    print("\nNice, now let's get you a custom DNS address")
     if not questionary.confirm("You should be on the control panel, correct?").ask():
         print("No problem! Just go to https://www.dynu.com/en-US/ControlPanel or click on the settings icon.")
 
@@ -67,34 +74,66 @@ def dynu_setup():
     print("Follow the prompts to create a new DDNS service.")
     questionary.press_any_key_to_continue("Press any key once you have created a DDNS service.").ask()
 
-    print("Great! Now just add a password to your DDNS service.")
+    print("\nGreat! Now just add a password to your DDNS service.")
     print("Click on the link next to the red flag \"IP Update Password\"")
     print("And then enter a strong password into the \"New IP Update Password\" and confirm field.")
     questionary.press_any_key_to_continue("Press any key once you have added a password.").ask()
 
-    print("Now that we got your DDNS service set up, let's get your password and domain.")
+    print("\nNow that we got your DDNS service set up, let's get your password and domain.")
 
-    dynu_password = password_confirm()
-    dynu_domain = questionary.text("What is your dynu domain?").ask()
+    while True:
+        dynu_password = password_confirm()
+        dynu_domain = questionary.text("What is your dynu domain?").ask()
+
+        credentials_valid = update_DNS(test=True, domain=dynu_domain, password=dynu_password)
+
+        if credentials_valid:
+            print("DNS credentials [green]valid[/green]")
+            break
+        else:
+            print("DNS credentials [red]invalid[/red]")
+            questionary.press_any_key_to_continue("Press any key to re-enter credentials")
+
     return dynu_password, dynu_domain
 
 
 def home_assistant_setup():
+    while True:
+        clear_console()
+
+        print("Home Assistant will be used for some automatic tasks, like updating and backups")
+        print("But in order to use Home Assistant we will need its ip and token")
+        home_assistant_ip = questionary.text(
+            "What is you Home Assistant address?",
+            validate=lambda val: val.startswith("http://") or val.startswith("https://") or "Must start with http:// or https://",  # type: ignore
+            default="http://",
+        ).ask()
+
+        print("Getting your token is fairly easy")
+        print("Go to your profile in the bottom-left corner, then to the security tab.\nAt the bottom you will see long lived access token, create one, name it something like Bedrock server manager")
+        print("Then paste the token bellow")
+        home_assistant_token = questionary.password("Home Assistant token:").ask()
+
+        url_valid, token_valid = check_api(home_assistant_ip, home_assistant_token)
+
+        color1 = "green" if url_valid else "red"
+        print(f"URL: [{color1}]{'A' if url_valid else 'Una'}vailable[/{color1}]")
+        color2 = "green" if token_valid else "red"
+        print(f"Token: [{color2}]{'Not' if not token_valid else ''} Valid[/{color2}]")
+
+        if url_valid and token_valid:
+            questionary.press_any_key_to_continue("\nPress any key to continue...").ask()
+            break
+        else:
+            questionary.press_any_key_to_continue("Press any key to try again...").ask()
+
     clear_console()
-    print("Home Assistant will be used for some automatic tasks, like updating and backups")
-    print("But in order to use Home Assistant we will need its ip and token")
-    home_assistant_ip = questionary.text("What is you Home Assistant address?",
-                                         validate=lambda val: val.startswith("http://") or val.startswith("https://") or "Must start with http:// or https://",  # type: ignore
-                                         default="http://").ask()
-    print("Getting your token is fairly easy")
-    print("Go to your profile in the bottom-left corner, then to the security tab.\nAt the bottom you will see long lived access token, create one, name it something like Bedrock server manager")
-    print("Then paste the token bellow")
-    home_assistant_token = questionary.password("Home Assistant token:").ask()
-    clear_console()
+
     print("Now we have to set up a switch")
     print("First make a switch for turning on and off auto shutdown (useful for debugging)")
     print("Go to settings > devices and services > helpers > add (switch)")
     auto_shutdown_entity = questionary.text("Name of switch: ", validate=lambda val: val.startswith("input_boolean.") or "helper must be a switch", default="input_boolean.").ask()  # type: ignore
+    
     return home_assistant_ip, home_assistant_token, auto_shutdown_entity
 
 
@@ -197,7 +236,7 @@ def main():
 
     clear_console()
 
-    # gather all variables and save them to a dictionary
+    # Gather all variables and save them to a dictionary
     config_data = {}
 
     program_location = os.path.dirname(os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__))
@@ -243,7 +282,7 @@ def main():
 
     clear_console()
 
-    # automatically get the users ip and confirm if it's right
+    # Automatically get the users ip and confirm if it's right
     mc_ip = get_minecraft_ip()
 
     def validate_local_ip(ip: str) -> bool:
@@ -256,40 +295,41 @@ def main():
     if not questionary.confirm(f"Is this your local ip: {mc_ip}").ask():
         mc_ip = questionary.text("Please add your local ip:", default="192.168.1.1", validate=validate_local_ip).ask()
 
-    # ask for the minecraft port (type checking is not needed, because variable is always string)
+    # Ask for the minecraft port (type checking is not needed, because variable is always string)
     mc_port = int(questionary.text("Enter the Minecraft server port:", default="19132", validate=lambda x: x.isdigit()).ask())  # type: ignore
 
-    # save the minecraft data
+    # Save the minecraft data
     config_data["mc"] = {"ip": mc_ip, "port": mc_port}
     clear_console()
 
     config_location = Path(os.path.join(program_location, "config.yaml"))
 
-    # save the file and warn the user if it contains sensitive information
+    # Save the file and warn the user if it contains sensitive information
     with open(config_location, 'w') as f:
         yaml.dump(config_data, f, default_flow_style=False, indent=2)
-        print(f"Config file saved to {config_location}")
+        print(f"[#9e9e9e]Config file saved to {config_location}")
 
     if dynu or home_assistant:
-        print("Never share this file with anyone as it will give access to all of the services you configured")
+        print("[underline]Never[/] share this file with anyone as it will give access to all of the services you configured")
 
-    # load config we just saved
+    # Load config we just saved
     cfg = Config.load()
 
-    # ask permission to download the repositories
-    print("This program can uses MCXboxBroadcast/Broadcaster to make it possible for console players to join the server, this is optional")
+    # Ask permission to download the repositories
+    print("\nThis program can uses [italics]MCXboxBroadcast/Broadcaster[/] to make it possible for console players to join the server, this is optional\n")
 
-    # install and configure the console bridge
+    # Install and configure the console bridge
     if questionary.confirm("Do you want to download this program?").ask():
-        print("For the console bridge you will need a throw-away Microsoft account")
+        print("\nFor the console bridge you will need a throw-away Microsoft account")
         print("This account will then host your Minecraft world, so players on console can join it\n")
         print("Also, like the Broadcaster project says:")
         print("\"You use this project at your own risk...we emulate some features of a client which may or may not be against TOS\"")
         print("So, be warned\n")
 
         if questionary.confirm("Do you want to continue?").ask():
-            print("Great, downloading now")
-            msm.core.minecraft_updater.get_console_bridge(cfg)
+            with Live(Spinner("dots9", text="Great, downloading now..."), refresh_per_second=10):
+                msm.core.minecraft_updater.get_console_bridge(cfg)
+
             msm.core.minecraft_updater.authenticate_console_bridge(cfg)
             print("Now we just need to configure the bot")
             print("Luckily it is just two questions\n")
@@ -303,21 +343,19 @@ def main():
         questionary.press_any_key_to_continue("Press any key to continue.").ask()
 
     clear_console()
-    # install the minecraft updater and run it to also install the minecraft server
-    print("Downloading Minecraft updater repository...")
-    msm.core.minecraft_updater.get_minecraft_updater(cfg)
-    print("Downloading Minecraft server...")
-    msm.core.minecraft_updater.update_minecraft_server(cfg)
+    # Install the minecraft updater and run it to also install the minecraft server
+    with Live(Spinner("dots4", text="Downloading Minecraft updater repository..."), refresh_per_second=10):
+        msm.core.minecraft_updater.get_minecraft_updater(cfg)
+    with Live(Spinner("dots8", text="Downloading Minecraft server..."), refresh_per_second=10):
+        msm.core.minecraft_updater.update_minecraft_server(cfg)
 
-    # ask if the user wants an alias and add it if they do
-    # use input() prompts to avoid CPR error
     print("An alias makes it possible to run this program by just typing 'bsm' into the terminal")
     if not questionary.confirm("Have you added an alias for this program before").ask():
         if questionary.confirm("Would you like to add an alias").ask():
             program_path = os.path.abspath(sys.executable if getattr(sys, 'frozen', False) else __file__)
             add_alias(program_path)
 
-    # give instructions for running the program
+    # Give instructions for running the program
     print("To make this code work, first reboot this computer and then run 'bsm'")
     print("If you want the code to run on boot, follow the tutorial inside the README.md")
 
