@@ -88,7 +88,7 @@ def quick_backup(cfg: Config):
         return
 
     # generate name and a folder with today's date, if it doesn't exist already from an earlier backup
-    backup_name, folder_name = generate_file_name(cfg)
+    backup_name, folder_name = generate_file_name()
 
     # check if backup locations and folders exist and create them if the don't
     for backup_location in [cfg.backup_local_path, cfg.backup_local_path]:
