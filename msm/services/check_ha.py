@@ -22,7 +22,7 @@ def entity_status(cfg: Config, input_boolean: str):
         return True
 
 
-def check_api(url: str, token: str) -> tuple[str, str]:
+def check_api(url: str, token: str) -> tuple[bool, bool]:
     base_url = url.rstrip("/")
 
     # Get authproviders to check if URL belongs to Home Assistant
