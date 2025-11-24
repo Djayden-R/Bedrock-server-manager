@@ -29,14 +29,18 @@ log.propagate = False
 
 
 class Mode(Enum):
-    NORMAL = "normal"  # normal operating mode, shutdown after 3 minutes with local backup and hdd backup
-    DRIVE_BACKUP = "drive backup"  # just backup to drive, then shutdown
-    INVALID = "invalid time"  # boot up at an invalid time, just shutdown
+    NORMAL = "normal"  # Normal operating mode, shutdown after defined time and create local backup and hdd backup (depends on config)
+    DRIVE_BACKUP = "drive backup"  # Upload latest backup to drive, then shutdown
+    INVALID = "invalid time"  # Boot up at an invalid time, just shutdown
     CONFIGURATION = "config"  # go through set-up process
 
 
-def shutdown():
-    subprocess.run(["sudo", "shutdown", "now"])
+def shutdown(reboot: bool = False):
+    cmd = ["sudo", "shutdown"]
+    if reboot:
+        cmd.append("-r")
+    cmd.append("now")
+    subprocess.run(cmd)
 
 
 def hour_valid(hour: int) -> bool:
@@ -47,7 +51,7 @@ def hour_valid(hour: int) -> bool:
 
 
 def get_mode():
-    # check if configuration is needed
+    # Check if configuration is needed
     try:
         global cfg
         cfg = Config.load()
@@ -56,7 +60,7 @@ def get_mode():
 
     time = datetime.now()
     hour = time.hour
-    log.info(f"[{datetime.now()}] Current hour: {hour}")
+    log.info(f"Current hour: {hour}")
 
     if not (cfg.timing_begin_valid and cfg.timing_end_valid) or hour_valid(hour):
         return Mode.NORMAL
@@ -86,15 +90,23 @@ def normal_operation():
     if cfg.dynu_domain and cfg.dynu_pass:
         update_DNS(cfg)
 
-    if update_minecraft_server(cfg):  # if server needed an update, also update the console bridge
-        get_console_bridge(cfg)
-        shutdown()
-    else:  # if server wasn't updated, start the server manually
-        start_server(cfg)
+    server_updated = update_minecraft_server(cfg) # Try to update server and save whether it was updated
 
     if cfg.path_base:
         console_bridge = Path(os.path.join(cfg.path_base, "console_bridge", "MCXboxBroadcastStandalone.jar"))
-        if console_bridge.exists():
+        console_bridge_used = console_bridge.exists()
+    else:
+        raise ValueError("Base path is not defined")
+
+    if server_updated:
+        if console_bridge_used:
+            get_console_bridge(cfg)
+        shutdown(reboot=True)
+        exit(0)
+
+    else:
+        start_server(cfg)
+        if console_bridge_used:
             console_bridge_dir = os.path.join(cfg.path_base, "console_bridge")
             subprocess.Popen(["java", "-jar", str(console_bridge)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=console_bridge_dir)
 
@@ -103,53 +115,48 @@ def normal_operation():
             needs_backup = check_playercount(cfg)
             if needs_backup is True:  # server needs backup
                 if entity_status(cfg, cfg.ha_shutdown_entity):  # type: ignore
-                    log.info(f"[{datetime.now()}] Shutting down Minecraft server...")
+                    log.info("Shutting down Minecraft server...")
                     stop_server(cfg)
                     if cfg.backup_directories:
-                        log.info(f"[{datetime.now()}] Starting backup script")
+                        log.info("Starting backup script")
                         backup.main(cfg, type="quick")
                     else:
-                        log.info(f"[{datetime.now()}] No backup directories, skipping backup")
-                    log.info(f"[{datetime.now()}] Shutting down...")
+                        log.info("No backup directories, skipping backup")
+                    log.info("Shutting down...")
                     shutdown()
                 else:
-                    log.info(f"[{datetime.now()}] Auto shutdown is shut off...")
+                    log.info("Auto shutdown is shut off...")
             elif needs_backup is False:  # server doesn't need backup
                 if entity_status(cfg, cfg.ha_shutdown_entity):  # type: ignore
-                    log.info(f"[{datetime.now()}] No one online, but server was not used, so backup is not needed")
-                    log.info(f"[{datetime.now()}] Shutting down Minecraft server...")
+                    log.info("No one online, but server was not used, backup is not needed")
+                    log.info("Shutting down Minecraft server...")
                     stop_server(cfg)
-                    log.info(f"[{datetime.now()}] Shutting down...")
+                    log.info("Shutting down...")
                     shutdown()
             elif needs_backup is None:  # error occured
-                log.error(f"[{datetime.now()}] Error occurred in check_playercount, cannot proceed with shutdown/backup")
+                log.error("Error occurred in check_playercount, cannot proceed with shutdown/backup")
                 break
     else:
         log.warning("Auto shutdown is off, this is not reccomended, backups will not work")
 
 
 def drive_backup():
-    log.info(f"[{datetime.now()}] Only backing up to drive")
+    log.info("Only backing up to drive")
     backup.main(cfg, type="drive")
-    log.info(f"[{datetime.now()}] Shutting down...")
+    log.info("Shutting down...")
     shutdown()
-
-
-def update_server():
-    get_console_bridge(cfg)
-    update_minecraft_server(cfg)
 
 
 def main():
     mode = get_mode()
-    log.info(f"[{datetime.now()}] Current mode: {mode.value}")
+    log.info(f"Current mode: {mode.value}")
 
     if mode == Mode.NORMAL:
         normal_operation()
     elif mode == Mode.DRIVE_BACKUP:
         drive_backup()
     elif mode == Mode.INVALID:
-        log.info(f"[{datetime.now()}] Invalid time, shutting down")
+        log.info("Invalid time, shutting down")
         shutdown()
         sys.exit(1)
     elif mode == Mode.CONFIGURATION:
